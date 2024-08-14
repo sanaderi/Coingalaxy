@@ -1,119 +1,196 @@
-"use client";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { LAMPORTS_PER_SOL,Transaction, SystemProgram,PublicKey } from "@solana/web3.js";
-import { useEffect, useState } from "react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
- 
-export default function Home() {
-  const { connection } = useConnection();
-  const { publicKey,sendTransaction } = useWallet();
-  const [balance, setBalance] = useState<number>(0);
+'use client'
+import { z } from 'zod'
 
+import { useConnection, useWallet } from '@solana/wallet-adapter-react'
+import {
+  LAMPORTS_PER_SOL,
+  Transaction,
+  SystemProgram,
+  PublicKey
+} from '@solana/web3.js'
+import { useEffect, useState } from 'react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+
+export default function Home() {
+  const { connection } = useConnection()
+  const { publicKey, sendTransaction } = useWallet()
+  const [balance, setBalance] = useState<number>(0)
 
   useEffect(() => {
-  if (publicKey) {
-    (async function getBalanceEvery10Seconds() {
-      const newBalance = await connection.getBalance(publicKey);
-      setBalance(newBalance / LAMPORTS_PER_SOL);
-      setTimeout(getBalanceEvery10Seconds, 10000);
-    })();
-  }
-  }, [publicKey, connection, balance]);
-  
+    if (publicKey) {
+      ;(async function getBalanceEvery10Seconds() {
+        const newBalance = await connection.getBalance(publicKey)
+        setBalance(newBalance / LAMPORTS_PER_SOL)
+        setTimeout(getBalanceEvery10Seconds, 10000)
+      })()
+    }
+  }, [publicKey, connection, balance])
+
   const getAirdropOnClick = async () => {
-  try {
-    if (!publicKey) {
-      throw new Error("Wallet is not Connected");
-    }
-    const [latestBlockhash, signature] = await Promise.all([
-      connection.getLatestBlockhash(),
-      connection.requestAirdrop(publicKey, 1 * LAMPORTS_PER_SOL),
-    ]);
-    const sigResult = await connection.confirmTransaction(
-      { signature, ...latestBlockhash },
-      "confirmed",
-    );
-    if (sigResult) {
-      alert("Airdrop was confirmed!");
-    }
+    try {
+      if (!publicKey) {
+        throw new Error('Wallet is not Connected')
+      }
+      const [latestBlockhash, signature] = await Promise.all([
+        connection.getLatestBlockhash(),
+        connection.requestAirdrop(publicKey, 1 * LAMPORTS_PER_SOL)
+      ])
+      const sigResult = await connection.confirmTransaction(
+        { signature, ...latestBlockhash },
+        'confirmed'
+      )
+      if (sigResult) {
+        alert('Airdrop was confirmed!')
+      }
     } catch (err) {
-    alert("You are Rate limited for Airdrop");
-  }
-  };
-
-
-  const paySol = async (recipient: string) => {
-    if (!publicKey) {
-      alert("Wallet not connected!");
-      return;
+      alert('You are Rate limited for Airdrop')
     }
+  }
 
-    console.log(recipient)
+  const paySol = async () => {
+    if (!publicKey) {
+      alert('Wallet not connected!')
+      return
+    }
+    setIsLoading(true)
 
     try {
-      const recipientPublicKey = new PublicKey(recipient);
+      const recipientPublicKey = new PublicKey(formValues.destination)
 
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
           toPubkey: recipientPublicKey,
-          lamports: 0.4 * LAMPORTS_PER_SOL,
+          lamports: 0.4 * LAMPORTS_PER_SOL
         })
-      );
+      )
 
-      const signature = await sendTransaction(transaction, connection);
-      await connection.confirmTransaction(signature, "finalized");
+      const signature = await sendTransaction(transaction, connection)
+      await connection.confirmTransaction(signature, 'finalized')
 
-      const newBalance = await connection.getBalance(publicKey);
-      setBalance(newBalance / LAMPORTS_PER_SOL);
+      const newBalance = await connection.getBalance(publicKey)
+      setBalance(newBalance / LAMPORTS_PER_SOL)
 
-      alert("Payment successful!");
-    } catch (error:any) {
+      alert('Payment successful!')
+    } catch (error: any) {
       if (error?.code === 4001) {
         // User rejected the transaction
-        alert("Transaction was rejected by the user.");
-      } else if (error?.message.includes("insufficient funds")) {
+        alert('Transaction was rejected by the user.')
+      } else if (error?.message.includes('insufficient funds')) {
         // Not enough funds
-        alert("Insufficient funds for transaction.");
+        alert('Insufficient funds for transaction.')
       } else {
-        console.error("Payment failed", error);
-        alert("Payment failed! " + error.message);
+        console.error('Payment failed', error)
+        alert('Payment failed! ' + error.message)
       }
+    } finally {
+      setIsLoading(false)
     }
-  };
-  return (
-    <main className="flex items-center justify-center min-h-screen">
-      <div className="border hover:border-slate-900 rounded " >
-        <WalletMultiButton style={{}}  />
-      </div>
+  }
 
-      <div>
-         {publicKey ? (
-        <div className="flex flex-col gap-4">
-          <h1>Your Public key is: {publicKey?.toString()}</h1>
-          <h2>Your Balance is: {balance} SOL</h2>
-          <div>
-            <button
+  const formSchema = z.object({
+    destination: z
+      .string({ required_error: 'Destination is required' })
+      .min(5, { message: 'Destination must be more than 5 characters' })
+      .max(500, { message: 'Destination must be less than 500 characters' })
+      .trim(),
+    value: z.coerce
+      .number({ required_error: 'Value is required' })
+      .min(1, { message: 'Value should be more than 0' })
+  })
+  type FormSchema = z.infer<typeof formSchema>
+
+  const [formValues, setFormValues] = useState<z.infer<typeof formSchema>>({
+    destination: '',
+    value: 0
+  })
+
+  const [isLoading, setIsLoading] = useState(false)
+
+  return (
+    <div className="container mx-auto">
+      <main className="items-center justify-center min-h-screen max-w-screen-xl mx-auto p-4  ">
+        <div className="my-4 ">
+          <WalletMultiButton style={{}} />
+        </div>
+
+        <div>
+          {publicKey ? (
+            <div className="flex flex-col gap-4">
+              <h2>Your Balance is: {balance} SOL</h2>
+              <div>
+                {/* <button
               onClick={getAirdropOnClick}
               type="button"
               className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
             >
               Get Airdrop
               </button>
-              
-               <button
-                onClick={() => paySol("4dng5rCJWr5coZGyM9itEf963v65KCRgpRL5kqeAFFwp")}
-                type="button"
-                className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
-              >
-                Pay 1 SOL
-              </button>
-          </div>
+               */}
+
+                <div className="p-4">
+                  <div className="flex space-x-4">
+                    <div>
+                      <label
+                        htmlFor="textbox"
+                        className="block text-sm font-medium text-white"
+                      >
+                        Destination Wallet Address
+                      </label>
+                      <input
+                        id="textbox"
+                        type="text"
+                        className="mt-1 block w-full text-black px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Type here..."
+                        onChange={(event) =>
+                          setFormValues({
+                            ...formValues,
+                            destination: event.target.value
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="textbox"
+                        className="block text-sm font-medium text-white"
+                      >
+                        Value
+                      </label>
+                      <input
+                        id="textbox"
+                        type="number"
+                        onChange={(event) =>
+                          setFormValues({
+                            ...formValues,
+                            value: event.target.value
+                          })
+                        }
+                        className="mt-1 block w-full text-black px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Type here..."
+                      />
+                    </div>
+                    <div>
+                      <button
+                        disabled={isLoading || formValues.value == 0}
+                        onClick={() => paySol()}
+                        type="button"
+                        className="mt-5 text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+                      >
+                        {isLoading
+                          ? 'Processing...'
+                          : `Pay ${formValues.value} SOL`}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <h1>Wallet is not connected</h1>
+          )}
         </div>
-      ) : (
-        <h1>Wallet is not connected</h1>
-      )}
-      </div>
-    </main>
-  );
+      </main>
+    </div>
+  )
 }
