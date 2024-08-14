@@ -1,6 +1,6 @@
 "use client";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { LAMPORTS_PER_SOL,Transaction, SystemProgram } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL,Transaction, SystemProgram,PublicKey } from "@solana/web3.js";
 import { useEffect, useState } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
  
@@ -51,10 +51,12 @@ export default function Home() {
     console.log(recipient)
 
     try {
+      const recipientPublicKey = new PublicKey(recipient);
+
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
-          toPubkey: recipient,
+          toPubkey: recipientPublicKey,
           lamports: 0.4 * LAMPORTS_PER_SOL,
         })
       );
