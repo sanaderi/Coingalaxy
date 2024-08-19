@@ -1,0 +1,23 @@
+import { userAgent } from "next/server"
+
+1- receive : {
+    {wallet_address:9amABYwZ73MtduGjWD3Ne3LUyf9PgCeK7nrnALX3KQM1,call_back:macrobo2.com,order_id:4004:amount:4000}
+}
+
+2- send it to solana blockchain and store it and recive trancsaction code
+(in first of work we can for this step only use dev solana network to store data for avoiding from Fee
+ until we have a plan to earn SOL from community by donating or charge plan or recice fee from second step(final user))
+ 
+ OR  ==> (-- encrypt it AES algoritm
+
+        -- Store it in database)
+
+
+
+4 - return transaction code or mongo_id to userAgent
+
+5 - user redirect to link by id => solana transaction code or mongo_id
+
+6 - retrive data from solana network ot mongodb and decrypt and finaly go to payment. (Also store order_id and client website as meme data)
+
+7- return to callback address
