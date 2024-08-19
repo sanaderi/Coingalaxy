@@ -101,8 +101,8 @@ export default function Home() {
   type FormSchema = z.infer<typeof formSchema>
 
   const [formValues, setFormValues] = useState<z.infer<typeof formSchema>>({
-    destination: '',
-    value: 0
+    destination: 'CqsrMXftjq31vNRBwJJZZqLX9tGYhV5wgrxAYemV4fyJ',
+    value: 1
   })
 
   const [isLoading, setIsLoading] = useState(false)
