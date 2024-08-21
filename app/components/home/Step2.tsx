@@ -70,9 +70,11 @@ export default function Step1({
     }
   }
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    alert('Copied to clipboard!')
+  const copyToClipboard = (text: string | undefined) => {
+    if (text) {
+      navigator.clipboard.writeText(text)
+      alert('Copied to clipboard!')
+    }
   }
 
   return (
