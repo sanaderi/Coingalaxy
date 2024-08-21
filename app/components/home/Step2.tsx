@@ -56,7 +56,7 @@ export default function Step1({
       })
 
       const result = await response.json()
-      if (result && result.result.insertedId) {
+      if (result && result.result.acknowledged) {
         setResponseMessage('Proccess successfully!')
         setKeys({
           publicKey: pbKey,
@@ -85,19 +85,20 @@ export default function Step1({
           <div className="flex flex-col ">
             {/* <h2>Wallet address: {PublicKey} </h2> */}
             <div>
-              <div className="text-center">
+              <div className="text-center mb-10">
                 For use this service you need have your own keys
               </div>
             </div>
             <div>
               <div className="mb-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 <h2 className="text-2xl font-bold">Public Key</h2>
-                <pre className="bg-gray-100  text-gray-900 p-4 rounded">
-                  {keys?.publicKey}
-                </pre>
+                <input
+                  value={keys?.publicKey}
+                  className="bg-gray-100  text-gray-900 p-4 rounded"
+                />
                 <button
                   onClick={() => copyToClipboard(keys?.publicKey)}
-                  className="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                  className="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-2 rounded"
                 >
                   Copy Public Key
                 </button>
@@ -105,12 +106,14 @@ export default function Step1({
 
               <div className="mb-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 <h2 className="text-2xl font-bold">Private Key</h2>
-                <pre className="bg-gray-100  text-gray-900 p-4 rounded">
-                  {keys?.privateKey}
-                </pre>
+                <input
+                  value={keys?.privateKey}
+                  className="bg-gray-100  text-gray-900 p-4 rounded"
+                />
+
                 <button
                   onClick={() => copyToClipboard(keys?.privateKey)}
-                  className="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                  className="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-2  rounded"
                 >
                   Copy Private Key
                 </button>

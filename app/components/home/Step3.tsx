@@ -13,10 +13,10 @@ export default function Step3({
         <code>walletAddress, amount, orderId, callBackUrl</code>
         <br /> by your private key and finaly send like this object value:
         <br />
-        yourEncryptedData, publicKey: yourPublicKey send request to
-        https://coingalaxy.info/generatePay by POST and send
+        <code>{`{value: "yourEncryptData", publicKey:"yourPublicKey"}`}</code>{' '}
         <br />
-        ,
+        send request to https://coingalaxy.info/generatePayment by POST method ,
+        <br />
         <br />
         <div>
           We generate a payment link and return to yourwebsite. redirect user to

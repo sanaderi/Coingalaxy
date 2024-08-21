@@ -6,30 +6,25 @@ export async function POST(request: NextRequest) {
     // Parse the incoming request body as JSON
     const body = await request.json();
 
+    console.log(body)
+
+
     // Validate the data (optional)
-    if (!body || !body.wallet || !body.pvKey || !body.pbKey) {
+    if (!body || !body.publicKey || !body.value) {
       return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
     }
 
     // Connect to MongoDB
     const client = await clientPromise;
     const db = client.db('coingalaxy');
-    const collection = db.collection('users');
+    const collection = db.collection('payments');
 
-     // Upsert: update the pbKey and pvKey if wallet exists, or insert if it doesn't
-    const result = await collection.updateOne(
-      { wallet: body.wallet }, // Filter: match by wallet address
-      {
-        $set: {
-          pvKey: body.pvKey,
-          pbKey: body.pbKey,
-        },
-      },
-      { upsert: true } // Create a new document if no match is found
-    );
+    // Insert the data into MongoDB
+    const result = await collection.insertOne(body);
 
     // Return a success response
-    return NextResponse.json({ message: 'Data saved successfully', result });
+    const paymentLink=`${process.env.WEBSITE_URL}/payment/${result.insertedId}`
+    return NextResponse.json({ message: 'Data saved successfully', payment_link:paymentLink });
   } catch (error) {
     console.error('Error in POST API:', error);
     return NextResponse.json({ error: 'Failed to save data' }, { status: 500 });

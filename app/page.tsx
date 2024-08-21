@@ -24,7 +24,7 @@ export default function Home() {
     value: 1
   })
 
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(3)
   const [isLoading, setIsLoading] = useState(false)
 
   return (
