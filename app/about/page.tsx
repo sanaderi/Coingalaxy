@@ -14,7 +14,7 @@ export default function Home() {
           <p className="text-lg text-white-600 text-center max-w-2xl mx-auto mb-8">
             We are a team of passionate individuals dedicated to creating
             amazing digital experiences. Our goal is to provide top-notch
-            services and solutions that exceed our clients' expectations.
+            services and solutions that exceed our clients expectations.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
