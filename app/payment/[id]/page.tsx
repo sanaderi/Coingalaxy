@@ -11,8 +11,9 @@ import {
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { truncateString } from '@/utils/truncateString'
+import { useParams } from 'next/navigation'
 
-export default function Home() {
+export default function Payment() {
   const { connection } = useConnection()
   const { publicKey, sendTransaction } = useWallet()
   const [balance, setBalance] = useState<number>(0)
@@ -26,6 +27,31 @@ export default function Home() {
       })()
     }
   }, [publicKey, connection, balance])
+
+  const params = useParams()
+  const pageId = params.id! // Extract id from the URL params
+  useEffect(() => {
+    // Fetch the payment data only once when the component mounts
+    const fetchPaymentData = async () => {
+      try {
+        const response = await fetch('/api/getPayment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ pageId: pageId }) // Send pageId as part of the request body
+        })
+
+        const data = await response.json()
+        console.log(data.decryptedData)
+        console.log(JSON.parse(data.decryptedData).wallet_address)
+      } catch (error) {
+        console.error('Error fetching payment data:', error)
+      }
+    }
+
+    fetchPaymentData()
+  }, [pageId]) // Depend on pageId, ensures it only runs when pageId changes
 
   const getAirdropOnClick = async () => {
     try {

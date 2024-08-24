@@ -6,9 +6,6 @@ export async function POST(request: NextRequest) {
     // Parse the incoming request body as JSON
     const body = await request.json();
 
-    console.log(body)
-
-
     // Validate the data (optional)
     if (!body || !body.publicKey || !body.value) {
       return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
