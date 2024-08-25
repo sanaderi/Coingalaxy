@@ -36,9 +36,9 @@ export default function Menu() {
           >
             <path
               stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
               d="M1 1h15M1 7h15M1 13h15"
             />
           </svg>
@@ -52,7 +52,6 @@ export default function Menu() {
               <Link
                 href="/"
                 className="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500 dark:bg-blue-600 md:dark:bg-transparent"
-                aria-current="page"
               >
                 Home
               </Link>
@@ -85,7 +84,7 @@ export default function Menu() {
           </ul>
         </div>
         <div>
-          <WalletMultiButton style={{}} />
+          <WalletMultiButton />
         </div>
       </div>
     </nav>
