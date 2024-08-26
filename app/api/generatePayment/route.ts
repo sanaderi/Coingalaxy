@@ -1,6 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import clientPromise from '../../../lib/mongodb'
 
+/**
+ * @swagger
+ * /api/generatePayment:
+ *   post:
+ *     summary: Generate a payment link
+ *     description: This endpoint allows you to create a new payment link by providing the required data in the request body.
+ *     tags:
+ *       - Required
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               value:
+ *                 type: string
+ *                 description: Encrypted data by your public key
+ *               publicKey:
+ *                 type: string
+ *                 description: your public key
+ *             required:
+ *               - value
+ *               - publicKey
+ *     responses:
+ *       200:
+ *         description: Payment link successfully generated
+ *       400:
+ *         description: Bad Request - Invalid input
+ */
+
 export async function POST(request: NextRequest) {
   try {
     // Parse the incoming request body as JSON

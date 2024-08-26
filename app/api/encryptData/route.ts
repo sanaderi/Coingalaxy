@@ -2,6 +2,56 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { Buffer } from 'buffer' // Ensure buffer is imported
 
+/**
+ * @swagger
+ * /api/encryptData:
+ *   post:
+ *     summary: Encrypt data
+ *     description: This endpoint allows you to before sending encrypt your data and the required data in the request body.
+ *     tags:
+ *       - Optional
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               data:
+ *                 type: object
+ *                 description: Contains wallet address, URL, and other relevant fields
+ *                 properties:
+ *                   wallet_address:
+ *                     type: string
+ *                     description: The user wallet address
+ *                   url:
+ *                     type: string
+ *                     description: Source website url
+ *                   callback:
+ *                     type: string
+ *                     description: callback route (like "/payment/result")
+ *                   order_id:
+ *                     type: string
+ *                     description: Order ID
+ *                   value:
+ *                     type: string
+ *                     description: Requested amount for payment
+ *                 required:
+ *                   - wallet_address
+ *                   - url
+ *               publicKey:
+ *                 type: string
+ *                 description: your public key Retrieved from coingalaxy
+ *             required:
+ *               - data
+ *               - publicKey
+ *     responses:
+ *       200:
+ *         description: Payment link successfully generated
+ *       400:
+ *         description: Bad Request - Invalid input
+ */
+
 interface EncryptRequestBody {
   publicKey: string // Base64-encoded DER public key
   data: {
