@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import {
+  TransactionInstruction,
   LAMPORTS_PER_SOL,
   Transaction,
   SystemProgram,
@@ -55,6 +56,11 @@ export default function PaymentCard({ data }: { data: DecryptedData }) {
     }
   }
 
+  // Program ID for the Memo Program
+  const MEMO_PROGRAM_ID = new PublicKey(
+    'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
+  )
+
   const paySol = async () => {
     if (!publicKey) {
       alert('Wallet not connected!')
@@ -70,6 +76,12 @@ export default function PaymentCard({ data }: { data: DecryptedData }) {
           fromPubkey: publicKey,
           toPubkey: recipientPublicKey,
           lamports: data.value * LAMPORTS_PER_SOL
+        }),
+        // Add the memo instruction
+        new TransactionInstruction({
+          keys: [],
+          programId: MEMO_PROGRAM_ID, // The Memo Program ID
+          data: Buffer.from(data.order_id.toString()) // Memo data, encoded as a Buffer
         })
       )
 
@@ -78,8 +90,9 @@ export default function PaymentCard({ data }: { data: DecryptedData }) {
 
       const newBalance = await connection.getBalance(publicKey)
       setBalance(newBalance / LAMPORTS_PER_SOL)
-
-      alert('Payment successful!')
+      const transactionLink = `https://explorer.solana.com/tx/${signature}?cluster=mainnet-beta`
+      console.log(`View transaction: ${transactionLink}`)
+      alert(`Payment successful!`)
     } catch (error: any) {
       if (error?.code === 4001) {
         // User rejected the transaction
@@ -94,6 +107,8 @@ export default function PaymentCard({ data }: { data: DecryptedData }) {
       setIsLoading(false)
     }
   }
+
+  // Example usage
 
   const [isLoading, setIsLoading] = useState(false)
 
