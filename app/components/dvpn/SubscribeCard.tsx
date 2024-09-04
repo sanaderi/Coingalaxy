@@ -120,10 +120,7 @@ export default function SubscribeCard() {
                   <div className="w-full mb-10 mx-auto">
                     <div className="w-full flex">
                       <div className="w-1 md:w-1/4  mb-6 md:mb-0">
-                        <label
-                          for="quantity-input"
-                          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        >
+                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                           Choose Charge (per day):
                         </label>
                         <div className="relative flex items-center max-w-[8rem]">
