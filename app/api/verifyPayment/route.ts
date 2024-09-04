@@ -3,15 +3,18 @@
 import { NextResponse, NextRequest } from 'next/server'
 
 import { Connection, PublicKey } from '@solana/web3.js'
+import { string } from 'zod'
 
 // // Define the Solana cluster endpoint
 const SOLANA_CLUSTER = process.env.NEXT_PUBLIC_RPC_URL
+if (!SOLANA_CLUSTER) {
+  throw new Error('Environment variable NEXT_PUBLIC_RPC_URL is not set')
+}
 
-// // Create a connection to the Solana cluster
 const connection = new Connection(SOLANA_CLUSTER, 'confirmed')
 
 // // Helper function to get transaction details
-const getTransactionDetails = async (signature) => {
+const getTransactionDetails = async (signature: string) => {
   try {
     const transaction = await connection.getTransaction(signature, {
       commitment: 'confirmed'
@@ -69,7 +72,7 @@ const getTransactionDetails = async (signature) => {
  */
 
 // Helper function to extract memo data from logs
-const extractMemoDataFromLogs = (logMessages: Array) => {
+const extractMemoDataFromLogs = (logMessages: Array<string>) => {
   const memoPrefix = 'Program log: Memo (len '
   const memoData = logMessages
     .filter((log) => log.startsWith(memoPrefix)) // Filter logs starting with the memo prefix
@@ -100,8 +103,13 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    //   // Extract log messages and memo data
+    // Extract log messages and memo data
     const { logMessages } = transaction
+    if (!logMessages)
+      return NextResponse.json({
+        status: 500,
+        error: 'Transaction not found'
+      })
     const memoData = extractMemoDataFromLogs(logMessages)
     const orderId = memoData[0]
     return NextResponse.json({

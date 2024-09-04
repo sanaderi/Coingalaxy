@@ -21,7 +21,21 @@ export default function AppWalletProvider({
 }: {
   children: React.ReactNode
 }) {
-  const network = WalletAdapterNetwork.Devnet
+  const networkEnv = process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'Devnet'
+
+  // Map environment variable to WalletAdapterNetwork
+  const network = useMemo(() => {
+    switch (networkEnv.toLowerCase()) {
+      case 'testnet':
+        return WalletAdapterNetwork.Testnet
+      case 'mainnet':
+        return WalletAdapterNetwork.Mainnet
+      case 'devnet':
+      default:
+        return WalletAdapterNetwork.Devnet
+    }
+  }, [networkEnv])
+
   const rpcURL =
     process.env.NEXT_PUBLIC_RPC_URL || 'https://api.mainnet-beta.solana.com/'
   const endpoint = useMemo(() => rpcURL, [network])
