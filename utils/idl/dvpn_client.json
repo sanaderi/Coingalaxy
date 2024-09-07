@@ -19,13 +19,19 @@
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "priceUpdate",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pdaAccount",
+          "isMut": true,
+          "isSigner": false
         }
       ],
       "args": [
-        {
-          "name": "title",
-          "type": "string"
-        },
         {
           "name": "expirationDate",
           "type": "i64"
@@ -44,10 +50,6 @@
             "type": "publicKey"
           },
           {
-            "name": "title",
-            "type": "string"
-          },
-          {
             "name": "expirationDate",
             "type": "i64"
           }
@@ -56,6 +58,6 @@
     }
   ],
   "metadata": {
-    "address": "96auXDuKQQs7jMA68yW2uugMDqbF77t4KeVp9wsHP6zM"
+    "address": "GuNu64rJ3eudKozZtgnCK5x1AwKEoge3d6pgFJYXXLTL"
   }
 }

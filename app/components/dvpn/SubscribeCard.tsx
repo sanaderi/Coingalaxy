@@ -7,15 +7,8 @@ import { BN, web3 } from '@project-serum/anchor' // Import BN
 import { PublicKey } from '@solana/web3.js'
 
 import { useEffect, useState } from 'react'
-import { AnchorProvider } from '@coral-xyz/anchor'
-
-interface DecryptedData {
-  wallet_address: string
-  url: string
-  order_id: string
-  value: number
-  callback: string
-}
+import { AnchorProvider, AnchorError, Wallet } from '@coral-xyz/anchor'
+// import { PythSolanaReceiver } from "@pythnetwork/pyth-solana-receiver"
 
 export default function SubscribeCard() {
   const { connection } = useConnection()
@@ -24,8 +17,7 @@ export default function SubscribeCard() {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleCreatePlan = async () => {
-    const planTitle = 'new title'
-    const expirationDate = Date.now()
+    const expirationDate = 90
 
     try {
       const program = getProgram()
@@ -34,24 +26,46 @@ export default function SubscribeCard() {
       // Generate a new keypair for the plan
       const plan = web3.Keypair.generate()
 
+      // Create the PublicKey object using the buffer
+      const SOL_PRICE_FEED_ID = new PublicKey(
+        '7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE'
+      )
+
+     // Derive the PDA using the same seed
+const [pdaPublicKey, bump] = await PublicKey.findProgramAddressSync(
+  [Buffer.from("payment")], // Ensure this matches the seed in your Rust program
+  program.programId
+);
+
+console.log("Derived PDA PublicKey:", pdaPublicKey.toBase58());
+
+
       // Call the `createPlan` instruction defined in the IDL
-      await program.rpc.createPlan(planTitle, new BN(expirationDate), {
+
+      await program.rpc.createPlan(new BN(expirationDate), {
         accounts: {
           plan: plan.publicKey,
           user: provider.wallet.publicKey,
-          systemProgram: web3.SystemProgram.programId
+          systemProgram: web3.SystemProgram.programId,
+          priceUpdate: SOL_PRICE_FEED_ID,
+          pdaAccount:pdaPublicKey
         },
         signers: [plan]
       })
       console.log('Plan created with address:', plan.publicKey.toBase58())
+      getPlanDetails(plan.publicKey.toBase58())
     } catch (err) {
-      console.error('Failed to create plan:', err)
+      if (err instanceof AnchorError) {
+        console.error('AnchorError:', err)
+        console.error('Error Details:', err.error.errorMessage)
+      } else {
+        console.error('TransactionError:', err)
+      }
     }
   }
 
   const getPlansByUser = async (userPublicKey: PublicKey) => {
     const program = getProgram()
-    const provider = program.provider
 
     try {
       // Fetch all accounts for the program where the owner is the user's public key
@@ -81,13 +95,8 @@ export default function SubscribeCard() {
     }
   }
 
-  // Replace with the public key of the user whose plans you want to fetch
-  const userPublicKey = new PublicKey(
-    '9amABYwZ73MtduGjWD3Ne3LUyf9PgCeK7nrnALX3KQM1'
-  )
-  // getPlansByUser(userPublicKey)
-
-  const getPlanDetails = async (planPublicKey: PublicKey) => {
+  const getPlanDetails = async (key: string) => {
+    const planPublicKey = new PublicKey(key)
     const program = getProgram()
 
     try {
@@ -95,17 +104,13 @@ export default function SubscribeCard() {
       const planDetails = await program.account.plan.fetch(planPublicKey)
 
       console.log('Plan Details:', planDetails)
+      console.log('Number:', planDetails.expirationDate.toNumber())
+
       return planDetails
     } catch (error) {
       console.error('Failed to fetch plan details:', error)
     }
   }
-
-  // Replace with the actual public key of the Plan account you want to retrieve
-  const planPublicKey = new PublicKey(
-    'JDNYashDahXUSVvn1SUEa4QzPmByNtjq7SBa8iwb6Gjp'
-  )
-  getPlanDetails(planPublicKey)
 
   return (
     <div>
