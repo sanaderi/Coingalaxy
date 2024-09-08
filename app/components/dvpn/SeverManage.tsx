@@ -20,7 +20,7 @@ export default function SubscribeCard() {
   const { publicKey } = useWallet()
 
   const [isLoading, setIsLoading] = useState(false)
-  const [userPlans, setUserPlans] = useState<Array<UsrPlans>>([])
+  const [activeServers, setactiveServers] = useState<Array<UsrPlans>>([])
   const [solPrice, setPriceData] = useState(0)
 
   const dialogRef = useRef(null)
@@ -34,15 +34,7 @@ export default function SubscribeCard() {
     getPrice()
   }, [])
 
-  const openDialog = () => {
-    // dialogRef.current?.showModal()
-  }
-
-  const closeDialog = () => {
-    // dialogRef.current?.close()
-  }
-
-  const handleCreatePlan = async (expirationDate: number) => {
+  const handleSubmitServer = async (expirationDate: number) => {
     try {
       const program = getProgram()
       const provider = program.provider as AnchorProvider
@@ -62,7 +54,7 @@ export default function SubscribeCard() {
       )
 
       // Call the `createPlan` instruction defined in the IDL
-      await program.rpc.createPlan(new BN(expirationDate), {
+      await program.rpc.submitServer(new BN(expirationDate), {
         accounts: {
           plan: plan.publicKey,
           user: provider.wallet.publicKey,
@@ -113,7 +105,7 @@ export default function SubscribeCard() {
 
       console.log(plans)
 
-      setUserPlans(plans)
+      setactiveServers(plans)
     } catch (error) {
       console.error('Failed to fetch plans for user:', error)
     }
@@ -154,71 +146,47 @@ export default function SubscribeCard() {
                 {publicKey ? (
                   <div className="w-full mb-10 mx-auto px-4">
                     <h1 className="text-2xl font-bold text-center mb-6">
-                      Buy your plan now
+                      Submit your server
                     </h1>
-                    <div className="w-full flex flex-col xs:flex-col sm:flex-row gap-4 justify-center items-center">
-                      <div className="card bg-neutral text-white-content w-full md:w-96">
-                        <div className="card-body">
-                          <h2 className="card-title">Monthly Plan</h2>
-                          <p>Price is 2$ ≈ {(2 / solPrice).toFixed(4)} SOL</p>
-                          <div className="card-actions justify-end">
-                            <button
-                              className="btn btn-outline"
-                              onClick={() => handleCreatePlan(30)}
-                            >
-                              Buy Now
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="card bg-neutral-content text-primary-content w-full md:w-96">
-                        <div className="card-body">
-                          <h2 className="card-title">Bi-Monthly Plan</h2>
-                          <p>Price is 4$ ≈ {(4 / solPrice).toFixed(4)} SOL</p>
-                          <div className="card-actions justify-end">
-                            <button
-                              className="btn "
-                              onClick={() => handleCreatePlan(60)}
-                            >
-                              Buy Now
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="card bg-amber-500 text-primary-content w-full md:w-96">
-                        <div className="card-body">
-                          <h2 className="card-title">Quarterly Plan</h2>
-                          <p>Price is 6$ ≈ {(6 / solPrice).toFixed(4)} SOL</p>
-                          <div className="card-actions justify-end">
-                            <button
-                              className="btn "
-                              onClick={() => handleCreatePlan(90)}
-                            >
-                              Buy Now
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="w-full flex flex-col xs:flex-col md:flex-row gap-4 justify-center items-center">
+                      <input
+                        type="text"
+                        placeholder="IP Address"
+                        className="input input-bordered w-full md:max-w-xs"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Port"
+                        className="input input-bordered w-full md:max-w-20"
+                      />
+                      <select className="select select-bordered w-full md:max-w-40">
+                        <option>SSH Tunnel</option>
+                      </select>
+                      <button
+                        onClick={() => handleSubmitServer}
+                        className="btn btn-primary w-full md:max-w-40"
+                      >
+                        Submit
+                      </button>
                     </div>
 
                     <h1 className="text-2xl font-bold text-center mt-16 mb-8">
                       Your plans
                     </h1>
-                    {userPlans.length === 0 ? (
+                    {activeServers.length === 0 ? (
                       <p className="text-center">No plans found</p>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full lg:w-1/2 table-auto mx-auto mb-14">
                           <thead>
                             <tr>
-                              <th className="text-left">Owner</th>
-                              <th className="text-left">Expiry Date</th>
-                              <th className="text-left">Action</th>
+                              <th className="text-left">IP Address</th>
+                              <th className="text-left">Port</th>
+                              <th className="text-left">Type</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {userPlans.map((plan, index) => (
+                            {activeServers.map((plan, index) => (
                               <tr key={index}>
                                 <td className="py-1">
                                   {plan.publicKey.toString()}
@@ -228,14 +196,7 @@ export default function SubscribeCard() {
                                     plan.expirationDate.toString()
                                   )}
                                 </td>
-                                <td>
-                                  <button
-                                    onClick={() => openDialog()}
-                                    className="btn btn-outline btn-xs"
-                                  >
-                                    Config
-                                  </button>
-                                </td>
+                                <td>SSH Tunnel</td>
                               </tr>
                             ))}
                           </tbody>
