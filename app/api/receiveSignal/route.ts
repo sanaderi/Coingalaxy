@@ -19,12 +19,12 @@ export async function POST(request: NextRequest) {
     const ip = requestIP.split(',')[0].trim()
 
     // Check if the request IP matches any of the allowed IPs
-    if (!allowedIPs.includes(ip)) {
-      return NextResponse.json(
-        { error: 'Access denied: Your IP is not allowed.' },
-        { status: 403 }
-      )
-    }
+    // if (!allowedIPs.includes(ip)) {
+    //   return NextResponse.json(
+    //     { error: 'Access denied: Your IP is not allowed.' },
+    //     { status: 403 }
+    //   )
+    // }
 
     // Parse the incoming request body as JSON
     const body = await request.json()
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const collection = db.collection('trade_history')
 
     // Insert the data into MongoDB
-    const result = await collection.insertOne(body)
+    const result = await collection.insertOne({ ...body, ip })
 
     // Return a success response
     return NextResponse.json({
