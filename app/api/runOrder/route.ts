@@ -54,10 +54,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const nowUTC = new Date(Date.now()).toISOString()
+
     // Insert the data into MongoDB
     const result = await collection.insertOne({
       msg: `New position: ${firstDoc.signal}`,
-      ip
+      ip,
+      time: nowUTC
     })
 
     const id = firstDoc._id
