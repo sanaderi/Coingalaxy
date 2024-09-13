@@ -45,10 +45,7 @@ export async function POST(request: NextRequest) {
 
     let current_time = Math.floor(Date.now() / 1000)
     let second_time = firstDoc.time + 300
-    if (
-      (firstDoc && second_time < current_time) ||
-      firstDoc.confirm !== firstDoc.signal
-    ) {
+    if (firstDoc && second_time < current_time) {
       return NextResponse.json(
         {
           error: 'Not found new signal'
