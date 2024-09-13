@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import clientPromise from '../../../lib/mongodb'
+import { error } from 'console'
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,15 +38,51 @@ export async function POST(request: NextRequest) {
     // Connect to MongoDB
     const client = await clientPromise
     const db = client.db('coingalaxy')
-    const collection = db.collection('trade_history')
+    const collection = db.collection('signal_status')
 
     // Insert the data into MongoDB
-    const result = await collection.insertOne({ ...body, ip })
+    const firstDoc = await collection.findOne({}, { sort: { _id: 1 } })
 
+    let dataObject = {}
+    if (body.type === 'sell') {
+      if (body.value == 'signal' && firstDoc && firstDoc.confirm == 'sell') {
+        dataObject.signal = 'sell'
+        dataObject.time = Math.floor(Date.now() / 1000)
+      } else if (body.value == 'mild' || body.value == 'divergence')
+        dataObject.confirm = 'sell'
+    } else if (body.type === 'buy') {
+      if (body.value == 'signal' && firstDoc && firstDoc.confirm == 'buy') {
+        dataObject.signal = 'buy'
+        dataObject.time = Math.floor(Date.now() / 1000)
+      } else if (body.value == 'mild' || body.value == 'divergence')
+        dataObject.confirm = 'buy'
+    }
+
+    if (!dataObject)
+      return NextResponse.json(
+        { error: 'Uknown data', data: dataObject },
+        { status: 500 }
+      )
+
+    if (firstDoc) {
+      const id = firstDoc._id
+
+      // Update the existing document
+      const update = { $set: { ...dataObject } }
+      const result = await collection.findOneAndUpdate({ _id: id }, update, {
+        returnDocument: 'after'
+      })
+    } else {
+      // No document exists, insert a new one
+      const insertResult = await collection.insertOne({
+        ...dataObject,
+        time: Math.floor(Date.now() / 1000)
+      })
+    }
     // Return a success response
     return NextResponse.json({
       message: 'Data saved successfully',
-      data: body
+      data: dataObject
     })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to save data' }, { status: 500 })
