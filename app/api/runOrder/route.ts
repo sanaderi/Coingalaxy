@@ -34,6 +34,15 @@ export async function POST(request: NextRequest) {
 
     const firstDoc = await status_collection.findOne({}, { sort: { _id: 1 } })
 
+    if (!firstDoc) {
+      return NextResponse.json(
+        {
+          error: 'No document found'
+        },
+        { status: 500 }
+      )
+    }
+
     let current_time = Math.floor(Date.now() / 1000)
     let second_time = firstDoc.time + 300
     if (

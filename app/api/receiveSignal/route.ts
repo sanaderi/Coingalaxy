@@ -43,7 +43,13 @@ export async function POST(request: NextRequest) {
     // Insert the data into MongoDB
     const firstDoc = await collection.findOne({}, { sort: { _id: 1 } })
 
-    let dataObject = {}
+    interface DataObject {
+      signal?: string
+      time?: number
+      confirm?: string
+    }
+
+    let dataObject: DataObject = {}
     if (body.type === 'sell') {
       if (body.value == 'signal' && firstDoc && firstDoc.confirm == 'sell') {
         dataObject.signal = 'sell'
