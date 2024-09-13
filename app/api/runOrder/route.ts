@@ -29,10 +29,37 @@ export async function POST(request: NextRequest) {
     // Connect to MongoDB
     const client = await clientPromise
     const db = client.db('coingalaxy')
+    const status_collection = db.collection('signal_status')
     const collection = db.collection('order_history')
 
+    const firstDoc = await status_collection.findOne({}, { sort: { _id: 1 } })
+
+    let current_time = Math.floor(Date.now() / 1000)
+    let second_time = firstDoc.time + 300
+    if (
+      (firstDoc && second_time < current_time) ||
+      firstDoc.confirm !== firstDoc.signal
+    ) {
+      return NextResponse.json(
+        {
+          error: 'Not found new signal'
+        },
+        { status: 500 }
+      )
+    }
+
     // Insert the data into MongoDB
-    const result = await collection.insertOne({ msg: 'task run', ip })
+    const result = await collection.insertOne({
+      msg: `New position: ${firstDoc.signal}`,
+      ip
+    })
+
+    const id = firstDoc._id
+    // Update the existing document
+    const update = { $set: { confirm: false } }
+    await status_collection.findOneAndUpdate({ _id: id }, update, {
+      returnDocument: 'after'
+    })
 
     // Return a success response
     return NextResponse.json({
