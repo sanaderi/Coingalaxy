@@ -79,7 +79,6 @@ export const jupiterSwap = async (
     // deserialize the transaction
     const swapTransactionBuf = Buffer.from(swapTransaction, 'base64')
     var transaction = VersionedTransaction.deserialize(swapTransactionBuf)
-    console.log(transaction)
 
     // Step 5: Sign transaction with keypair
     transaction.sign([keypair])
@@ -99,7 +98,6 @@ export const jupiterSwap = async (
       signature: txid
     })
 
-    console.log(`https://solscan.io/tx/${txid}`)
     return `https://solscan.io/tx/${txid}`
   } catch (error) {
     console.error('Error during swap:', error)
