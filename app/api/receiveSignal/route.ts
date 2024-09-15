@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate the data (optional)
-    if (!body) {
+    if (!body && !body.type && body.value) {
       return NextResponse.json({ error: 'Invalid data' }, { status: 400 })
     }
 
@@ -43,52 +43,25 @@ export async function POST(request: NextRequest) {
     // Insert the data into MongoDB
     const firstDoc = await collection.findOne({}, { sort: { _id: 1 } })
 
-    interface DataObject {
-      signal?: string
-      time?: number
-      confirm?: string
-    }
-
-    let dataObject: DataObject = {}
-    if (body.type === 'sell') {
-      if (body.value == 'signal' && firstDoc && firstDoc.confirm == 'sell') {
-        dataObject.signal = 'sell'
-        dataObject.time = Math.floor(Date.now() / 1000)
-      } else if (body.value == 'mild' || body.value == 'divergence')
-        dataObject.confirm = 'sell'
-    } else if (body.type === 'buy') {
-      if (body.value == 'signal' && firstDoc && firstDoc.confirm == 'buy') {
-        dataObject.signal = 'buy'
-        dataObject.time = Math.floor(Date.now() / 1000)
-      } else if (body.value == 'mild' || body.value == 'divergence')
-        dataObject.confirm = 'buy'
-    }
-
-    if (!dataObject)
-      return NextResponse.json(
-        { error: 'Uknown data', data: dataObject },
-        { status: 500 }
-      )
-
     if (firstDoc) {
       const id = firstDoc._id
 
       // Update the existing document
-      const update = { $set: { ...dataObject } }
+      const update = { $set: { ...body, time: Math.floor(Date.now() / 1000) } }
       const result = await collection.findOneAndUpdate({ _id: id }, update, {
         returnDocument: 'after'
       })
     } else {
       // No document exists, insert a new one
       const insertResult = await collection.insertOne({
-        ...dataObject,
+        ...body,
         time: Math.floor(Date.now() / 1000)
       })
     }
     // Return a success response
     return NextResponse.json({
       message: 'Data saved successfully',
-      data: dataObject
+      data: body
     })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to save data' }, { status: 500 })

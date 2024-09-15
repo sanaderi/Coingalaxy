@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import clientPromise from '../../../lib/mongodb'
+import { jupiterSwap } from '@/lib/jupiter'
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,6 +27,9 @@ export async function POST(request: NextRequest) {
     //   )
     // }
 
+    const usdcToken = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+    const jupToken = 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'
+
     // Connect to MongoDB
     const client = await clientPromise
     const db = client.db('coingalaxy')
@@ -44,8 +48,48 @@ export async function POST(request: NextRequest) {
     }
 
     let current_time = Math.floor(Date.now() / 1000)
-    let second_time = firstDoc.time + 300
-    if (firstDoc && second_time < current_time) {
+    let last_period_end_time = current_time - 300
+    let signal_time = firstDoc.time
+    if (signal_time > last_period_end_time && signal_time <= current_time) {
+      const nowUTC = new Date(Date.now()).toISOString()
+
+      let sourceToken = ''
+      let destinationToken = ''
+      if (firstDoc.type === 'buy') {
+        sourceToken = usdcToken
+        destinationToken = jupToken
+      } else if (firstDoc.type == 'sell') {
+        sourceToken = jupToken
+        destinationToken = usdcToken
+      }
+
+      const result_swap: string | undefined = await jupiterSwap(
+        sourceToken,
+        destinationToken,
+        firstDoc.address
+      )
+
+      // Insert the data into MongoDB
+      await collection.insertOne({
+        msg: `New position: ${firstDoc.type}`,
+        ip,
+        time: nowUTC,
+        result: result_swap
+      })
+
+      const id = firstDoc._id
+      // Update the existing document
+      const update = { $set: { type: null } }
+      await status_collection.findOneAndUpdate({ _id: id }, update, {
+        returnDocument: 'after'
+      })
+
+      // Return a success response
+      return NextResponse.json({
+        message: 'Data saved successfully',
+        data: { msg: 'task run', ip, result: result_swap }
+      })
+    } else {
       return NextResponse.json(
         {
           error: 'Not found new signal'
@@ -53,28 +97,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
-
-    const nowUTC = new Date(Date.now()).toISOString()
-
-    // Insert the data into MongoDB
-    const result = await collection.insertOne({
-      msg: `New position: ${firstDoc.signal}`,
-      ip,
-      time: nowUTC
-    })
-
-    const id = firstDoc._id
-    // Update the existing document
-    const update = { $set: { confirm: false } }
-    await status_collection.findOneAndUpdate({ _id: id }, update, {
-      returnDocument: 'after'
-    })
-
-    // Return a success response
-    return NextResponse.json({
-      message: 'Data saved successfully',
-      data: { msg: 'task run', ip }
-    })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to save data' }, { status: 500 })
   }
