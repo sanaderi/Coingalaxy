@@ -1,6 +1,8 @@
+export const maxDuration = 60
+
 import { NextRequest, NextResponse } from 'next/server'
 import clientPromise from '../../../lib/mongodb'
-import { error } from 'console'
+import { jupiterSwap } from '@/lib/jupiter'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +29,6 @@ export async function POST(request: NextRequest) {
     //   )
     // }
 
-    // Parse the incoming request body as JSON
     const body = await request.json()
 
     // Validate the data (optional)
@@ -35,33 +36,56 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid data' }, { status: 400 })
     }
 
+    const usdcToken = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+    const jupToken = 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'
+
     // Connect to MongoDB
     const client = await clientPromise
     const db = client.db('coingalaxy')
-    const collection = db.collection('signal_status')
+    const status_collection = db.collection('signal_status')
+    const collection = db.collection('order_history')
+
+    const firstDoc = await status_collection.findOne({}, { sort: { _id: 1 } })
+
+    if (!firstDoc) {
+      return NextResponse.json(
+        {
+          error: 'No document found'
+        },
+        { status: 500 }
+      )
+    }
+
+    const nowUTC = new Date(Date.now()).toISOString()
+
+    let sourceToken = ''
+    let destinationToken = ''
+    if (body.type === 'buy') {
+      sourceToken = usdcToken
+      destinationToken = jupToken
+    } else if (body.type == 'sell') {
+      sourceToken = jupToken
+      destinationToken = usdcToken
+    }
+
+    const result_swap: string | undefined = await jupiterSwap(
+      sourceToken,
+      destinationToken,
+      firstDoc.address
+    )
 
     // Insert the data into MongoDB
-    const firstDoc = await collection.findOne({}, { sort: { _id: 1 } })
+    await collection.insertOne({
+      msg: `New position: ${body.type}`,
+      ip,
+      time: nowUTC,
+      result: result_swap
+    })
 
-    if (firstDoc) {
-      const id = firstDoc._id
-
-      // Update the existing document
-      const update = { $set: { ...body, time: Math.floor(Date.now() / 1000) } }
-      const result = await collection.findOneAndUpdate({ _id: id }, update, {
-        returnDocument: 'after'
-      })
-    } else {
-      // No document exists, insert a new one
-      const insertResult = await collection.insertOne({
-        ...body,
-        time: Math.floor(Date.now() / 1000)
-      })
-    }
     // Return a success response
     return NextResponse.json({
       message: 'Data saved successfully',
-      data: body
+      data: { msg: 'task run', ip, result: result_swap }
     })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to save data' }, { status: 500 })
