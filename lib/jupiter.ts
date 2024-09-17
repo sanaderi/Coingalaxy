@@ -90,7 +90,7 @@ export const jupiterSwap = async (
     const rawTransaction = transaction.serialize()
     const txid = await connection.sendRawTransaction(rawTransaction, {
       skipPreflight: true,
-      maxRetries: 3
+      maxRetries: 4
     })
     await connection.confirmTransaction({
       blockhash: latestBlockHash.blockhash,
