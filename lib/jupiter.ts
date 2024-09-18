@@ -26,11 +26,10 @@ const connection = new Connection(
 export const jupiterSwap = async (
   sourceToken: string,
   destinationToken: string,
-  address: Array<number>,
-  retryCount = 0 // Add retryCount parameter to keep track of retry attempts
+  address: Array<number>
 ): Promise<string> => {
-  const MAX_RETRIES = 3 // Maximum number of retries
-  const RETRY_DELAY = 30000 // Delay between retries in milliseconds (30 seconds)
+  // const MAX_RETRIES = 3 // Maximum number of retries
+  // const RETRY_DELAY = 30000 // Delay between retries in milliseconds (30 seconds)
 
   try {
     const secretKey = Uint8Array.from(address)
@@ -106,13 +105,13 @@ export const jupiterSwap = async (
 
     return `https://solscan.io/tx/${txid}`
   } catch (error) {
-    if (retryCount < MAX_RETRIES) {
-      console.log(`Retrying operation... (${retryCount + 1}/${MAX_RETRIES})`)
-      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY))
-      return jupiterSwap(sourceToken, destinationToken, address, retryCount + 1) // Recursive call with incremented retry count
-    } else {
-      console.error('Error performing swap after retries:', error)
-      return 'error'
-    }
+    // if (retryCount < MAX_RETRIES) {
+    //   console.log(`Retrying operation... (${retryCount + 1}/${MAX_RETRIES})`)
+    //   await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY))
+    //   return jupiterSwap(sourceToken, destinationToken, address, retryCount + 1) // Recursive call with incremented retry count
+    // } else {
+    console.error('Error performing swap:', error)
+    return 'error'
+    // }
   }
 }
