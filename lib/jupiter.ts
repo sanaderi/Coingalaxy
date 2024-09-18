@@ -41,6 +41,8 @@ export const jupiterSwap = async (
       sourceToken
     )
 
+    if (amount < 1) return 'insufficient amount'
+
     // Step 1: Create swap request with slippage tolerance
     const quoteRequest = {
       amount: Math.floor(amount) * 10 ** 6,
