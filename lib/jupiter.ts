@@ -49,7 +49,7 @@ export const jupiterSwap = async (
       outputMint: destinationToken,
       userPublicKey: keypair.publicKey.toBase58(), // User's public key
       wrapUnwrapSol: false,
-      slippageBps: 100 // Add slippage tolerance here
+      slippageBps: 150 // Add slippage tolerance here
     }
 
     // Step 2: Make API call to Jupiter
