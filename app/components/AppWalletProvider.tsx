@@ -21,16 +21,15 @@ export default function AppWalletProvider({
 }: {
   children: React.ReactNode
 }) {
-  const network = WalletAdapterNetwork.Devnet
   const rpcURL =
     process.env.NEXT_PUBLIC_RPC_URL || 'https://api.mainnet-beta.solana.com/'
-  const endpoint = useMemo(() => rpcURL, [network])
+  const endpoint = useMemo(() => rpcURL, [rpcURL])
   const wallets = useMemo(
     () => [
       // manually add any legacy wallet adapters here
       // new UnsafeBurnerWalletAdapter(),
     ],
-    [network]
+    []
   )
 
   return (
