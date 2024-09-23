@@ -1,5 +1,4 @@
 'use client'
-import { z } from 'zod'
 import { getProgram } from '../../../utils/createPlan' // Adjust the path as needed
 
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
@@ -10,6 +9,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { AnchorProvider, AnchorError, Wallet } from '@coral-xyz/anchor'
 import { formatUTCDate } from '@/utils/formatUTCDate'
 import { fetchJupiterPrice } from '@/lib/jupiter'
+import { ipSchema, portSchema } from '@/utils/validationSchemas'
 interface UsrPlans {
   owner: string
   expirationDate: string
@@ -22,6 +22,10 @@ export default function SubscribeCard() {
   const [isLoading, setIsLoading] = useState(false)
   const [activeServers, setactiveServers] = useState<Array<UsrPlans>>([])
   const [solPrice, setPriceData] = useState(0)
+  const [ipAddress, setIpAddress] = useState('')
+  const [portNum, setPortNum] = useState('')
+  const [connectionType, setConnectionType] = useState('ssht')
+  const [errors, setErrors] = useState({})
 
   const dialogRef = useRef(null)
 
@@ -34,7 +38,32 @@ export default function SubscribeCard() {
     getPrice()
   }, [])
 
-  const handleSubmitServer = async (expirationDate: number) => {
+  const handleSubmitServer = async () => {
+    // Validate the IP address using Zod schema
+    const ipValidationResult = ipSchema.safeParse(ipAddress)
+    const portValidationResult = portSchema.safeParse(Number(portNum))
+
+    if (ipValidationResult.success) {
+      // Clear error and proceed with the valid IP address
+      setErrors('')
+      console.log('Valid IP:', ipAddress)
+    } else {
+      // Set error message if validation fails
+      setErrors(ipValidationResult.error.errors[0].message)
+      console.log('Invalid address')
+    }
+
+    if (portValidationResult.success) {
+      // Clear error and proceed with the valid IP address
+      setErrors('')
+      console.log('Valid Port:', portNum)
+    } else {
+      // Set error message if validation fails
+      setErrors(portValidationResult.error.errors[0].message)
+      console.log('Invalid port number')
+    }
+    return
+
     try {
       const program = getProgram()
       const provider = program.provider as AnchorProvider
@@ -54,7 +83,7 @@ export default function SubscribeCard() {
       )
 
       // Call the `createPlan` instruction defined in the IDL
-      await program.rpc.submitServer(new BN(expirationDate), {
+      await program.rpc.submitServer(new BN(ipAddress), {
         accounts: {
           plan: plan.publicKey,
           user: provider.wallet.publicKey,
@@ -151,19 +180,26 @@ export default function SubscribeCard() {
                     <div className="w-full flex flex-col xs:flex-col md:flex-row gap-4 justify-center items-center">
                       <input
                         type="text"
+                        value={ipAddress}
+                        onChange={(e) => setIpAddress(e.target.value)}
                         placeholder="IP Address"
                         className="input input-bordered w-full md:max-w-xs"
                       />
                       <input
                         type="text"
+                        value={portNum}
+                        onChange={(e) => setPortNum(e.target.value)}
                         placeholder="Port"
                         className="input input-bordered w-full md:max-w-20"
                       />
-                      <select className="select select-bordered w-full md:max-w-40">
-                        <option>SSH Tunnel</option>
+                      <select
+                        onChange={(e) => setConnectionType(e.target.value)}
+                        className="select select-bordered w-full md:max-w-40"
+                      >
+                        <option value="ssht">SSH Tunnel</option>
                       </select>
                       <button
-                        onClick={() => handleSubmitServer}
+                        onClick={() => handleSubmitServer()}
                         className="btn btn-primary w-full md:max-w-40"
                       >
                         Submit
