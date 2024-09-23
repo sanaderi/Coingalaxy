@@ -2,7 +2,7 @@ import { fetchJupiterPrice } from '@/lib/jupiter'
 import clientPromise from '@/lib/mongodb'
 import { NextResponse } from 'next/server'
 
-export async function POST() {
+export async function GET() {
   try {
     // Fetch current JUP price
     const data = await fetchJupiterPrice('JUP')
