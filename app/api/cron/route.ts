@@ -1,43 +1,101 @@
 import { fetchJupiterPrice } from '@/lib/jupiter'
 import clientPromise from '@/lib/mongodb'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
+export async function POST() {
   try {
+    // Fetch current JUP price
     const data = await fetchJupiterPrice('JUP')
     const jupPrice = data.data.JUP.price
+
+    // Connect to MongoDB
     const client = await clientPromise
     const db = client.db('coingalaxy')
     const settingCollection = db.collection('setting')
 
-    let highPrice = 0
-    let lowPrice = 0
-    let trend = ''
-    const setting = await settingCollection.findOne({}, { sort: { _id: 1 } })
+    // Initialize variables
+    let previousHigh,
+      previousLow,
+      highPrice,
+      lowPrice,
+      trend = ''
+    let HH,
+      LL,
+      LH,
+      HL = 0
+
+    // Fetch the current price settings from MongoDB
+    const setting = await settingCollection.findOne({ key: 'price' })
 
     if (setting) {
-      highPrice = setting.high
-      lowPrice = setting.low
-      trend = setting.trend
-      //Update latest high and low price
-      if (jupPrice > setting.high) highPrice = jupPrice
-      else if (jupPrice < setting.low) lowPrice = jupPrice
-      //End update latest high and low price
-    }
-    // Upsert: update the pbKey and pvKey if wallet exists, or insert if it doesn't
-    const result = await settingCollection.updateOne(
-      { key: 'price' }, // Filter: match by wallet address
-      {
-        $set: {
-          high: highPrice,
-          low: lowPrice,
-          trend: 'sell'
+      previousHigh = setting.previousHigh || 0
+      previousLow = setting.previousLow || 0
+      highPrice = setting.high || jupPrice
+      lowPrice = setting.low || jupPrice
+      HH = setting.HH || highPrice
+      LL = setting.LL || lowPrice
+      LH = setting.LH || 0
+      HL = setting.HL || 0
+      trend = setting.trend || ''
+
+      // Check for HH, LL, LH, and HL
+      if (jupPrice > highPrice) {
+        highPrice = jupPrice
+        if (jupPrice > previousHigh) {
+          trend = 'Higher High (HH)'
+          HH = jupPrice // Update new HH
+        } else {
+          trend = 'Lower High (LH)'
+          LH = jupPrice // Update new LH
         }
-      },
-      { upsert: true } // Create a new document if no match is found
-    )
-    return NextResponse.json({ status: 1, message: 'success' })
-  } catch {
-    return NextResponse.json({ message: 'error' })
+        previousHigh = highPrice // Update previous high
+      } else if (jupPrice < lowPrice) {
+        lowPrice = jupPrice
+        if (jupPrice < previousLow) {
+          trend = 'Lower Low (LL)'
+          LL = jupPrice // Update new LL
+        } else {
+          trend = 'Higher Low (HL)'
+          HL = jupPrice // Update new HL
+        }
+        previousLow = lowPrice // Update previous low
+      }
+
+      // Upsert (update or insert) the price data and detected trend (HH, LL, LH, HL)
+      await settingCollection.updateOne(
+        { key: 'price' }, // Filter by 'key'
+        {
+          $set: {
+            high: highPrice,
+            low: lowPrice,
+            previousHigh: previousHigh,
+            previousLow: previousLow,
+            HH: HH, // Store new HH
+            LL: LL, // Store new LL
+            LH: LH, // Store new LH
+            HL: HL, // Store new HL
+            trend: trend // Store detected trend
+          }
+        },
+        { upsert: true }
+      )
+    }
+
+    return NextResponse.json({
+      status: 1,
+      high: highPrice,
+      low: lowPrice,
+      previousHigh: previousHigh,
+      previousLow: previousLow,
+      HH: HH, // Store new HH
+      LL: LL, // Store new LL
+      LH: LH, // Store new LH
+      HL: HL, // Store new HL
+      trend: trend, // Store detected trend
+      price: jupPrice
+    })
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json({ status: 0, message: 'error' })
   }
 }
