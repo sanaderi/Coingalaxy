@@ -62,7 +62,7 @@ export default function SubscribeCard() {
       setErrors(portValidationResult.error.errors[0].message)
       console.log('Invalid port number')
     }
-    return
+    // return
 
     try {
       const program = getProgram()
