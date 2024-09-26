@@ -47,38 +47,49 @@ export async function POST(request: NextRequest) {
 
     let sourceToken = ''
     let destinationToken = ''
+    let runSwap = false
     if (body.sender === 'fgh') {
       if (body.type === 'buy' && zigzag === 'buy') {
         sourceToken = usdcToken
         destinationToken = jupToken
+        runSwap = true
       } else if (body.type === 'sell' && zigzag === 'sell') {
         sourceToken = jupToken
         destinationToken = usdcToken
+        runSwap = true
       }
       await kv.set('fgh', body.type)
     } else if (body.sender === 'zigzag') {
       if (body.type === 'buy' && fgh === 'buy') {
         sourceToken = usdcToken
         destinationToken = jupToken
+        runSwap = true
       } else if (body.type === 'sell' && fgh === 'sell') {
         sourceToken = jupToken
         destinationToken = usdcToken
+        runSwap = true
       }
       await kv.set('zigzag', body.type)
     }
 
     if (!address) throw new Error(`Value  not found in the array.`)
 
-    const result_swap: string | undefined = await jupiterSwap(
-      sourceToken,
-      destinationToken,
-      address
-    )
+    if (runSwap) {
+      const result_swap: string | undefined = await jupiterSwap(
+        sourceToken,
+        destinationToken,
+        address
+      )
 
-    return NextResponse.json({
-      message: 'Data saved successfully',
-      data: { msg: 'task run', ip, result: result_swap }
-    })
+      return NextResponse.json({
+        message: 'Data saved successfully',
+        data: { msg: 'task run', ip, result: result_swap }
+      })
+    } else {
+      return NextResponse.json({
+        message: 'Condition incorrect'
+      })
+    }
   } catch (error) {
     return NextResponse.json({ error: 'Failed to save data' }, { status: 500 })
   }
