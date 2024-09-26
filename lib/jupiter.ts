@@ -49,7 +49,7 @@ export const jupiterSwap = async (
       outputMint: destinationToken,
       userPublicKey: keypair.publicKey.toBase58(), // User's public key
       wrapUnwrapSol: false,
-      slippageBps: 150 // Add slippage tolerance here
+      slippageBps: 300 // Add slippage tolerance here
     }
 
     // Step 2: Make API call to Jupiter
@@ -74,7 +74,7 @@ export const jupiterSwap = async (
           userPublicKey: quoteRequest.userPublicKey,
           // auto wrap and unwrap SOL. default is true
           wrapAndUnwrapSol: true,
-          dynamicSlippage: { maxBps: 150 }
+          dynamicSlippage: { maxBps: 300 }
 
           // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
           // feeAccount: "fee_account_public_key"

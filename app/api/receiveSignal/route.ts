@@ -3,8 +3,10 @@ export const maxDuration = 300
 import { NextRequest, NextResponse } from 'next/server'
 import clientPromise from '../../../lib/mongodb'
 import { jupiterSwap } from '@/lib/jupiter'
+import { kv } from '@vercel/kv'
 
 export async function POST(request: NextRequest) {
+  // Retrieve the inserted value (for verification)
   try {
     // Define the allowed IP addresses
     const allowedIPs = [
@@ -32,57 +34,47 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate the data (optional)
-    if (!body && !body.type && body.value) {
+    if (!body && body.sender && !body.type && body.value) {
       return NextResponse.json({ error: 'Invalid data' }, { status: 400 })
     }
 
     const usdcToken = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
     const jupToken = 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'
 
-    // Connect to MongoDB
-    const client = await clientPromise
-    const db = client.db('coingalaxy')
-    const status_collection = db.collection('signal_status')
-    const collection = db.collection('order_history')
-
-    const firstDoc = await status_collection.findOne({}, { sort: { _id: 1 } })
-
-    if (!firstDoc) {
-      return NextResponse.json(
-        {
-          error: 'No document found'
-        },
-        { status: 500 }
-      )
-    }
-
-    const nowUTC = new Date(Date.now()).toISOString()
+    const address: Array<number> | null = await kv.get('address')
+    const zigzag = await kv.get('zigzag')
+    const fgh = await kv.get('fgh')
 
     let sourceToken = ''
     let destinationToken = ''
-    if (body.type === 'buy') {
-      sourceToken = usdcToken
-      destinationToken = jupToken
-    } else if (body.type == 'sell') {
-      sourceToken = jupToken
-      destinationToken = usdcToken
+    if (body.sender === 'fgh') {
+      if (body.type === 'buy' && zigzag === 'buy') {
+        sourceToken = usdcToken
+        destinationToken = jupToken
+      } else if (body.type === 'sell' && zigzag === 'sell') {
+        sourceToken = jupToken
+        destinationToken = usdcToken
+      }
+      await kv.set('fgh', body.type)
+    } else if (body.sender === 'zigzag') {
+      if (body.type === 'buy' && fgh === 'buy') {
+        sourceToken = usdcToken
+        destinationToken = jupToken
+      } else if (body.type === 'sell' && fgh === 'sell') {
+        sourceToken = jupToken
+        destinationToken = usdcToken
+      }
+      await kv.set('zigzag', body.type)
     }
+
+    if (!address) throw new Error(`Value  not found in the array.`)
 
     const result_swap: string | undefined = await jupiterSwap(
       sourceToken,
       destinationToken,
-      firstDoc.address
+      address
     )
 
-    // Insert the data into MongoDB
-    await collection.insertOne({
-      msg: `New position: ${body.type}`,
-      ip,
-      time: nowUTC,
-      result: result_swap
-    })
-
-    // Return a success response
     return NextResponse.json({
       message: 'Data saved successfully',
       data: { msg: 'task run', ip, result: result_swap }
