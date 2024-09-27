@@ -72,9 +72,10 @@ export const jupiterSwap = async (
           // user public key to be used for the swap
           userPublicKey: quoteRequest.userPublicKey,
           // auto wrap and unwrap SOL. default is true
-          wrapAndUnwrapSol: true,
+          // wrapAndUnwrapSol: true,
           dynamicSlippage: { maxBps: 300 },
-          computeUnitPriceMicroLamports: true,
+          dynamicComputeUnitLimit: true, // allow dynamic compute limit instead of max 1,400,000
+          // custom priority fee
           prioritizationFeeLamports: 'auto' // or custom lamports: 1000
 
           // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
@@ -108,6 +109,7 @@ export const jupiterSwap = async (
 
     return `https://solscan.io/tx/${txid}`
   } catch (error) {
+    console.log(error)
     return 'error'
   }
 }
