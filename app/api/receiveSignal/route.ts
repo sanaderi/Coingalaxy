@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         sourceToken,
         destinationToken,
         address,
-        1
+        0
       )
 
       return NextResponse.json({
