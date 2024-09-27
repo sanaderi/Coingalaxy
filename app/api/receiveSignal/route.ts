@@ -79,8 +79,7 @@ export async function POST(request: NextRequest) {
       const result_swap: string | undefined = await jupiterSwap(
         sourceToken,
         destinationToken,
-        address,
-        0
+        address
       )
 
       return NextResponse.json({
