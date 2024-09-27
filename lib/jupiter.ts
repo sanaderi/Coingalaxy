@@ -74,6 +74,7 @@ export const jupiterSwap = async (
           // auto wrap and unwrap SOL. default is true
           wrapAndUnwrapSol: true,
           dynamicSlippage: { maxBps: 300 },
+          computeUnitPriceMicroLamports: true,
           prioritizationFeeLamports: 'auto' // or custom lamports: 1000
 
           // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
