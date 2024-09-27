@@ -2,9 +2,9 @@ import { Connection, PublicKey } from '@solana/web3.js'
 import { TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token'
 
 // Solana mainnet endpoint
-const connection = new Connection(
-  'https://capable-quaint-seed.solana-mainnet.quiknode.pro/174112d03c630343f0f4c5e65497491d319897c6/'
-)
+const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL
+if (!rpcUrl) throw new Error('Set rpc url')
+const connection = new Connection(rpcUrl)
 
 export const getTokenBalance = async (
   walletAddress: string,

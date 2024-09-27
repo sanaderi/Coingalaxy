@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
         destinationToken = jupToken
         runSwap = true
       } else if (body.type === 'sell' && fgh === 'sell') {
+        console.log('here run')
         sourceToken = jupToken
         destinationToken = usdcToken
         runSwap = true
@@ -72,13 +73,14 @@ export async function POST(request: NextRequest) {
       await kv.set('zigzag', body.type)
     }
 
-    if (!address) throw new Error(`Value  not found in the array.`)
+    if (!address) throw new Error(`Address incorrect`)
 
     if (runSwap) {
       const result_swap: string | undefined = await jupiterSwap(
         sourceToken,
         destinationToken,
-        address
+        address,
+        1
       )
 
       return NextResponse.json({

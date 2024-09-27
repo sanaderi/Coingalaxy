@@ -20,16 +20,17 @@ import { getTokenBalance } from '@/utils/splTokenBalance'
 import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js'
 // Replace with your actual Keypair
 
-const connection = new Connection(
-  'https://capable-quaint-seed.solana-mainnet.quiknode.pro/174112d03c630343f0f4c5e65497491d319897c6/'
-)
+const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL
+if (!rpcUrl) throw new Error('Set rpc url')
+const connection = new Connection(rpcUrl)
 export const jupiterSwap = async (
   sourceToken: string,
   destinationToken: string,
-  address: Array<number>
+  address: Array<number>,
+  retryCount: number
 ): Promise<string> => {
-  // const MAX_RETRIES = 3 // Maximum number of retries
-  // const RETRY_DELAY = 30000 // Delay between retries in milliseconds (30 seconds)
+  const MAX_RETRIES = 1 // Maximum number of retries
+  const RETRY_DELAY = 100000 // Delay between retries in milliseconds (30 seconds)
 
   try {
     const secretKey = Uint8Array.from(address)
@@ -39,6 +40,8 @@ export const jupiterSwap = async (
       keypair.publicKey.toBase58(),
       sourceToken
     )
+
+    console.log(amount)
 
     if (amount < 1) return 'insufficient amount'
 
@@ -107,13 +110,13 @@ export const jupiterSwap = async (
 
     return `https://solscan.io/tx/${txid}`
   } catch (error) {
-    // if (retryCount < MAX_RETRIES) {
-    //   console.log(`Retrying operation... (${retryCount + 1}/${MAX_RETRIES})`)
-    //   await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY))
-    //   return jupiterSwap(sourceToken, destinationToken, address, retryCount + 1) // Recursive call with incremented retry count
-    // } else {
-    console.error('Error performing swap:', error)
-    return 'error'
-    // }
+    if (retryCount < MAX_RETRIES) {
+      console.log(`Retrying operation... (${retryCount + 1}/${MAX_RETRIES})`)
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY))
+      return jupiterSwap(sourceToken, destinationToken, address, retryCount + 1) // Recursive call with incremented retry count
+    } else {
+      console.error('Error performing swap:', error)
+      return 'error'
+    }
   }
 }
