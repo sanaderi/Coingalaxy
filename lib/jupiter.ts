@@ -37,8 +37,6 @@ export const jupiterSwap = async (
       sourceToken
     )
 
-    console.log(amount)
-
     if (amount < 1) return 'insufficient amount'
 
     // Step 1: Create swap request with slippage tolerance
@@ -109,7 +107,7 @@ export const jupiterSwap = async (
 
     return `https://solscan.io/tx/${txid}`
   } catch (error) {
-    console.log(error)
+    console.error(error)
     return 'error'
   }
 }
