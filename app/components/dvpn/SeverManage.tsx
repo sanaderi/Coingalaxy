@@ -1,5 +1,5 @@
 'use client'
-import { getProgram } from '../../../utils/createPlan' // Adjust the path as needed
+import { getProgram } from '@/utils/connectAnchorProgram' // Adjust the path as needed
 
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { BN, web3 } from '@project-serum/anchor' // Import BN
@@ -10,9 +10,11 @@ import { AnchorProvider, AnchorError, Wallet } from '@coral-xyz/anchor'
 import { formatUTCDate } from '@/utils/formatUTCDate'
 import { fetchJupiterPrice } from '@/lib/jupiter'
 import { ipSchema, portSchema } from '@/utils/validationSchemas'
-interface UsrPlans {
+interface UsrServers {
   owner: string
-  expirationDate: string
+  ipAddress: string
+  portNumber: string
+  connectionType: string
   publicKey: string
 }
 export default function SubscribeCard() {
@@ -20,7 +22,7 @@ export default function SubscribeCard() {
   const { publicKey } = useWallet()
 
   const [isLoading, setIsLoading] = useState(false)
-  const [activeServers, setactiveServers] = useState<Array<UsrPlans>>([])
+  const [activeServers, setActiveServers] = useState<Array<UsrServers>>([])
   const [solPrice, setPriceData] = useState(0)
   const [ipAddress, setIpAddress] = useState('')
   const [portNum, setPortNum] = useState('')
@@ -51,6 +53,7 @@ export default function SubscribeCard() {
       // Set error message if validation fails
       setErrors(ipValidationResult.error.errors[0].message)
       console.log('Invalid address')
+      return
     }
 
     if (portValidationResult.success) {
@@ -61,6 +64,7 @@ export default function SubscribeCard() {
       // Set error message if validation fails
       setErrors(portValidationResult.error.errors[0].message)
       console.log('Invalid port number')
+      return
     }
     // return
 
@@ -68,13 +72,8 @@ export default function SubscribeCard() {
       const program = getProgram()
       const provider = program.provider as AnchorProvider
 
-      // Generate a new keypair for the plan
-      const plan = web3.Keypair.generate()
-
-      // Create the PublicKey object using the buffer
-      const SOL_PRICE_FEED_ID = new PublicKey(
-        '7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE'
-      )
+      // Generate a new keypair for the server
+      const server = web3.Keypair.generate()
 
       // Derive the PDA using the same seed
       const [pdaPublicKey, bump] = await PublicKey.findProgramAddressSync(
@@ -82,18 +81,16 @@ export default function SubscribeCard() {
         program.programId
       )
 
-      // Call the `createPlan` instruction defined in the IDL
-      await program.rpc.submitServer(new BN(ipAddress), {
+      // Call the `createServer` instruction defined in the IDL
+      await program.rpc.createServer(ipAddress, portNum, connectionType, {
         accounts: {
-          plan: plan.publicKey,
+          server: server.publicKey,
           user: provider.wallet.publicKey,
-          systemProgram: web3.SystemProgram.programId,
-          priceUpdate: SOL_PRICE_FEED_ID,
-          pdaAccount: pdaPublicKey
+          systemProgram: web3.SystemProgram.programId
         },
-        signers: [plan]
+        signers: [server]
       })
-      getPlanDetails(plan.publicKey.toBase58())
+      getServerDetails(server.publicKey.toBase58())
     } catch (err) {
       if (err instanceof AnchorError) {
         console.error('AnchorError:', err)
@@ -104,62 +101,65 @@ export default function SubscribeCard() {
     }
   }
 
-  const getPlansByUser = useCallback(async (userPublicKey: PublicKey) => {
-    const program = getProgram()
+  const getServerList = useCallback(async (userPublicKey: PublicKey) => {
+  const program = getProgram();
 
-    try {
-      // Fetch all accounts for the program where the owner is the user's public key
-      const accounts = await connection.getProgramAccounts(program.programId, {
-        filters: [
-          {
-            memcmp: {
-              offset: 8, // Adjust based on where the owner field is in the Plan struct
-              bytes: userPublicKey.toBase58()
-            }
+  try {
+    // Fetch all accounts for the program where the owner is the user's public key
+    const accounts = await connection.getProgramAccounts(program.programId, {
+      filters: [
+        {
+          memcmp: {
+            offset: 8, // Adjust based on where the owner field is in the Server struct
+            bytes: userPublicKey.toBase58()
           }
-        ]
-      })
-
-      // Decode each account data to get the plan details
-      const plans = accounts.map((account) => {
-        const planData = program.account.plan.coder.accounts.decode(
-          'Plan',
-          account.account.data
-        )
-        return {
-          publicKey: account.pubkey, // Access and return the publicKey as a string
-          ...planData // Spread the decoded plan data into the object
         }
-      })
+      ]
+    });
 
-      console.log(plans)
+    // Decode each account data to get the server details
+    const servers = accounts.map((account) => {
+      // Decode server data
+      const decodedServer = program.account.server.coder.accounts.decode('Server', account.account.data);
 
-      setactiveServers(plans)
-    } catch (error) {
-      console.error('Failed to fetch plans for user:', error)
-    }
-  }, [])
+      console.log('Decoded Server Data:', decodedServer);
+
+      return {
+        publicKey: account.pubkey.toBase58(), // Convert publicKey to a string
+        ...decodedServer // Spread the decoded server data into the object
+      };
+    });
+
+    console.log('Servers:', servers);
+    setActiveServers(servers);
+  } catch (error) {
+    console.error('Failed to fetch servers for user:', error);
+  }
+}, []);
+
 
   useEffect(() => {
     if (publicKey) {
-      getPlansByUser(publicKey)
+      getServerList(publicKey)
     }
-  }, [publicKey, getPlansByUser])
+  }, [publicKey, getServerList])
 
-  const getPlanDetails = async (key: string) => {
-    const planPublicKey = new PublicKey(key)
+  const getServerDetails = async (key: string) => {
+    const serverPublicKey = new PublicKey(key)
     const program = getProgram()
 
     try {
-      // Fetch the Plan account details using its public key
-      const planDetails = await program.account.plan.fetch(planPublicKey)
+      // Fetch the Server account details using its public key
+      const serverDetails = await program.account.server.fetch(serverPublicKey)
 
-      console.log('Plan Details:', planDetails)
-      console.log('Number:', planDetails.expirationDate.toNumber())
+      console.log('Server Details:', serverDetails)
+      console.log('Ip address:', serverDetails.ipAddress)
+      console.log('Port Num:', serverDetails.portNum)
+      console.log('Connection Type:', serverDetails.connectionType)
 
-      return planDetails
+      return serverDetails
     } catch (error) {
-      console.error('Failed to fetch plan details:', error)
+      console.error('Failed to fetch server details:', error)
     }
   }
 
@@ -177,6 +177,8 @@ export default function SubscribeCard() {
                     <h1 className="text-2xl font-bold text-center mb-6">
                       Submit your server
                     </h1>
+                    <p className='text-center mb-4 text-slate-100'>Under development, please switch wallet to dev mode</p>
+
                     <div className="w-full flex flex-col xs:flex-col md:flex-row gap-4 justify-center items-center">
                       <input
                         type="text"
@@ -207,10 +209,10 @@ export default function SubscribeCard() {
                     </div>
 
                     <h1 className="text-2xl font-bold text-center mt-16 mb-8">
-                      Your plans
+                      Your servers
                     </h1>
                     {activeServers.length === 0 ? (
-                      <p className="text-center">No plans found</p>
+                      <p className="text-center">No servers found</p>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full lg:w-1/2 table-auto mx-auto mb-14">
@@ -222,17 +224,13 @@ export default function SubscribeCard() {
                             </tr>
                           </thead>
                           <tbody>
-                            {activeServers.map((plan, index) => (
+                            {activeServers.map((server, index) => (
                               <tr key={index}>
                                 <td className="py-1">
-                                  {plan.publicKey.toString()}
+                                  {server.ipAddress.toString()}
                                 </td>
-                                <td>
-                                  {formatUTCDate(
-                                    plan.expirationDate.toString()
-                                  )}
-                                </td>
-                                <td>SSH Tunnel</td>
+                                <td>{server.portNumber.toString()}</td>
+                                <td>{server.connectionType}</td>
                               </tr>
                             ))}
                           </tbody>

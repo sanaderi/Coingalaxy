@@ -1,13 +1,21 @@
 import Head from 'next/head'
 import SubscribeCard from '../components/dvpn/SubscribeCard'
 import Link from 'next/link'
+import type { Metadata } from 'next'
+
+
+export const metadata: Metadata = {
+  title: 'Coingalaxy | Solana DVPN Service',
+  description: 'Solana DVPN Service'
+}
 
 export default async function DVPN() {
   return (
     <div className="w-full container px-2 my-10 ">
-      <h1 className="text-center text-2xl font-bold mb-10">
+      <h1 className="text-center text-2xl font-bold mb-4">
         Solana DVPN Service
       </h1>
+      <p className='text-center mb-4 text-slate-100'>Under development, please switch wallet to dev mode</p>
       <div className="w-full flex flex-col xs:flex-col sm:flex-row gap-4 justify-center items-center">
         <Link
           href="/solana-dvpn/client"

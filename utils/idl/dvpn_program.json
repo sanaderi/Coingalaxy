@@ -1,0 +1,128 @@
+{
+  "version": "0.1.0",
+  "name": "dvpn_program",
+  "instructions": [
+    {
+      "name": "createPlan",
+      "accounts": [
+        {
+          "name": "plan",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "priceUpdate",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pdaAccount",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "expirationDate",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "createServer",
+      "accounts": [
+        {
+          "name": "server",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "ipAddress",
+          "type": "string"
+        },
+        {
+          "name": "portNum",
+          "type": "string"
+        },
+        {
+          "name": "connectionType",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Plan",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "expirationDate",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Server",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "ipAddress",
+            "type": "string"
+          },
+          {
+            "name": "portNum",
+            "type": "string"
+          },
+          {
+            "name": "connectionType",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ExpirationTooSoon",
+      "msg": "The expiration date is less than 10 days."
+    }
+  ],
+  "metadata": {
+    "address": "6cGNiQMuBXeshM5RqXMpAdVSB1YrUN3cUZ8i5hvZrMN3"
+  }
+}

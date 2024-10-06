@@ -1,6 +1,6 @@
 'use client'
 import { z } from 'zod'
-import { getProgram } from '../../../utils/createPlan' // Adjust the path as needed
+import { getProgram } from '@/utils/connectAnchorProgram' // Adjust the path as needed
 
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { BN, web3 } from '@project-serum/anchor' // Import BN
@@ -156,6 +156,8 @@ export default function SubscribeCard() {
                     <h1 className="text-2xl font-bold text-center mb-6">
                       Buy your plan now
                     </h1>
+                          <p className='text-center mb-4 text-slate-100'>Under development, please switch wallet to dev mode</p>
+
                     <div className="w-full flex flex-col xs:flex-col sm:flex-row gap-4 justify-center items-center">
                       <div className="card bg-neutral text-white-content w-full md:w-96">
                         <div className="card-body">

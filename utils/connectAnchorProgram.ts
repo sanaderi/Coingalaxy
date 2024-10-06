@@ -1,6 +1,6 @@
 import { Connection, PublicKey } from '@solana/web3.js'
 import { Program, AnchorProvider, Idl } from '@project-serum/anchor'
-import idl from './idl/dvpn_client.json'
+import idl from './idl/dvpn_program.json'
 const programID = new PublicKey(idl.metadata.address)
 
 export const getProvider = () => {
@@ -11,7 +11,7 @@ export const getProvider = () => {
   }
 
   // Create a new connection to the Solana cluster
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL
+  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL_DEV
   if (!rpcUrl) throw new Error('Set rpc url')
   const connection = new Connection(rpcUrl, 'processed') // Change to your preferred cluster
 
