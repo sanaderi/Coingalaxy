@@ -20,7 +20,7 @@ export default function SubscribeCard() {
   const { publicKey } = useWallet()
 
   const [isLoading, setIsLoading] = useState(false)
-  const [notice, setNotice] = useState({})
+  const [notice, setNotice] = useState({ msg: '', type: '' })
 
   const [userPlans, setUserPlans] = useState<Array<UsrPlans>>([])
   const [solPrice, setPriceData] = useState(0)
@@ -46,7 +46,7 @@ export default function SubscribeCard() {
 
   const handleCreatePlan = async (expirationDate: number) => {
     setIsLoading(true)
-    setNotice({})
+    setNotice({ msg: '', type: '' })
 
     try {
       const program = getProgram()
@@ -233,7 +233,7 @@ export default function SubscribeCard() {
                     </div>
                     <p
                       className={`text-center mt-4 ${
-                        notice.type === 'err' ? 'text-error' : 'text-success'
+                        notice?.type === 'err' ? 'text-error' : 'text-success'
                       }`}
                     >
                       {notice?.msg}

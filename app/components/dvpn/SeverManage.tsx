@@ -26,7 +26,7 @@ export default function SubscribeCard() {
   const [ipAddress, setIpAddress] = useState('')
   const [portNum, setPortNum] = useState('')
   const [connectionType, setConnectionType] = useState('ssht')
-  const [notice, setNotice] = useState({})
+  const [notice, setNotice] = useState({ msg: '', type: '' })
 
   const dialogRef = useRef(null)
 
@@ -37,7 +37,7 @@ export default function SubscribeCard() {
 
     if (ipValidationResult.success) {
       // Clear error and proceed with the valid IP address
-      setNotice({})
+      setNotice({ msg: '', type: '' })
     } else {
       // Set error message if validation fails
       setNotice({
@@ -49,7 +49,7 @@ export default function SubscribeCard() {
 
     if (portValidationResult.success) {
       // Clear error and proceed with the valid IP address
-      setNotice({})
+      setNotice({ msg: '', type: '' })
     } else {
       // Set error message if validation fails
       setNotice({
