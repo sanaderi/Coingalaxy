@@ -1,6 +1,13 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import ServerManage from '../../components/dvpn/SeverManage'
+import type { Metadata } from 'next'
+
+
+export const metadata: Metadata = {
+  title: 'Coingalaxy | Solana DVPN Service',
+  description: 'Solana DVPN Service'
+}
 
 export default async function DVPN() {
   return (

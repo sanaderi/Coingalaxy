@@ -20,6 +20,8 @@ export default function SubscribeCard() {
   const { publicKey } = useWallet()
 
   const [isLoading, setIsLoading] = useState(false)
+  const [notice, setNotice] = useState({})
+
   const [userPlans, setUserPlans] = useState<Array<UsrPlans>>([])
   const [solPrice, setPriceData] = useState(0)
 
@@ -43,6 +45,9 @@ export default function SubscribeCard() {
   }
 
   const handleCreatePlan = async (expirationDate: number) => {
+    setIsLoading(true)
+    setNotice({})
+
     try {
       const program = getProgram()
       const provider = program.provider as AnchorProvider
@@ -72,14 +77,23 @@ export default function SubscribeCard() {
         },
         signers: [plan]
       })
+      setNotice({ msg: 'The purchase was made successfully', type: 'success' })
+
       getPlanDetails(plan.publicKey.toBase58())
     } catch (err) {
       if (err instanceof AnchorError) {
-        console.error('AnchorError:', err)
-        console.error('Error Details:', err.error.errorMessage)
+        setNotice({
+          msg: err.error.errorMessage,
+          type: 'err'
+        })
       } else {
-        console.error('TransactionError:', err)
+        setNotice({
+          msg: `TransactionError: ${err}`,
+          type: 'err'
+        })
       }
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -156,7 +170,9 @@ export default function SubscribeCard() {
                     <h1 className="text-2xl font-bold text-center mb-6">
                       Buy your plan now
                     </h1>
-                          <p className='text-center mb-4 text-slate-100'>Under development, please switch wallet to dev mode</p>
+                    <p className="text-center mb-4 text-slate-100">
+                      Under development, please switch wallet to dev mode
+                    </p>
 
                     <div className="w-full flex flex-col xs:flex-col sm:flex-row gap-4 justify-center items-center">
                       <div className="card bg-neutral text-white-content w-full md:w-96">
@@ -168,7 +184,11 @@ export default function SubscribeCard() {
                               className="btn btn-outline"
                               onClick={() => handleCreatePlan(30)}
                             >
-                              Buy Now
+                              {!isLoading ? (
+                                'Buy Now'
+                              ) : (
+                                <span className="loading loading-spinner loading-sm"></span>
+                              )}
                             </button>
                           </div>
                         </div>
@@ -183,7 +203,11 @@ export default function SubscribeCard() {
                               className="btn "
                               onClick={() => handleCreatePlan(60)}
                             >
-                              Buy Now
+                              {!isLoading ? (
+                                'Buy Now'
+                              ) : (
+                                <span className="loading loading-spinner loading-sm"></span>
+                              )}
                             </button>
                           </div>
                         </div>
@@ -197,12 +221,23 @@ export default function SubscribeCard() {
                               className="btn "
                               onClick={() => handleCreatePlan(90)}
                             >
-                              Buy Now
+                              {!isLoading ? (
+                                'Buy Now'
+                              ) : (
+                                <span className="loading loading-spinner loading-sm"></span>
+                              )}
                             </button>
                           </div>
                         </div>
                       </div>
                     </div>
+                    <p
+                      className={`text-center mt-4 ${
+                        notice.type === 'err' ? 'text-error' : 'text-success'
+                      }`}
+                    >
+                      {notice?.msg}
+                    </p>
 
                     <h1 className="text-2xl font-bold text-center mt-16 mb-8">
                       Your plans

@@ -23,22 +23,12 @@ export default function SubscribeCard() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [activeServers, setActiveServers] = useState<Array<UsrServers>>([])
-  const [solPrice, setPriceData] = useState(0)
   const [ipAddress, setIpAddress] = useState('')
   const [portNum, setPortNum] = useState('')
   const [connectionType, setConnectionType] = useState('ssht')
-  const [errors, setErrors] = useState({})
+  const [notice, setNotice] = useState({})
 
   const dialogRef = useRef(null)
-
-  useEffect(() => {
-    async function getPrice() {
-      const data = await fetchJupiterPrice('SOL') // Fetch SOL price as an example
-      setPriceData(data.data.SOL.price)
-    }
-
-    getPrice()
-  }, [])
 
   const handleSubmitServer = async () => {
     // Validate the IP address using Zod schema
@@ -47,27 +37,29 @@ export default function SubscribeCard() {
 
     if (ipValidationResult.success) {
       // Clear error and proceed with the valid IP address
-      setErrors('')
-      console.log('Valid IP:', ipAddress)
+      setNotice({})
     } else {
       // Set error message if validation fails
-      setErrors(ipValidationResult.error.errors[0].message)
-      console.log('Invalid address')
+      setNotice({
+        msg: ipValidationResult.error.errors[0].message,
+        type: 'err'
+      })
       return
     }
 
     if (portValidationResult.success) {
       // Clear error and proceed with the valid IP address
-      setErrors('')
-      console.log('Valid Port:', portNum)
+      setNotice({})
     } else {
       // Set error message if validation fails
-      setErrors(portValidationResult.error.errors[0].message)
-      console.log('Invalid port number')
+      setNotice({
+        msg: portValidationResult.error.errors[0].message,
+        type: 'err'
+      })
       return
     }
     // return
-
+    setIsLoading(true)
     try {
       const program = getProgram()
       const provider = program.provider as AnchorProvider
@@ -90,53 +82,57 @@ export default function SubscribeCard() {
         },
         signers: [server]
       })
-      getServerDetails(server.publicKey.toBase58())
+      setNotice({ msg: 'Server submited successfully', type: 'success' })
+      // getServerDetails(server.publicKey.toBase58())
     } catch (err) {
       if (err instanceof AnchorError) {
-        console.error('AnchorError:', err)
-        console.error('Error Details:', err.error.errorMessage)
+        setNotice({ msg: err.error.errorMessage, type: 'err' })
       } else {
-        console.error('TransactionError:', err)
+        setNotice({ msg: `TransactionError: ${err}`, type: 'err' })
       }
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const getServerList = useCallback(async (userPublicKey: PublicKey) => {
-  const program = getProgram();
+    const program = getProgram()
 
-  try {
-    // Fetch all accounts for the program where the owner is the user's public key
-    const accounts = await connection.getProgramAccounts(program.programId, {
-      filters: [
-        {
-          memcmp: {
-            offset: 8, // Adjust based on where the owner field is in the Server struct
-            bytes: userPublicKey.toBase58()
+    try {
+      // Fetch all accounts for the program where the owner is the user's public key
+      const accounts = await connection.getProgramAccounts(program.programId, {
+        filters: [
+          {
+            memcmp: {
+              offset: 8, // Adjust based on where the owner field is in the Server struct
+              bytes: userPublicKey.toBase58()
+            }
           }
+        ]
+      })
+
+      // Decode each account data to get the server details
+      const servers = accounts.map((account) => {
+        // Decode server data
+        const decodedServer = program.account.server.coder.accounts.decode(
+          'Server',
+          account.account.data
+        )
+
+        console.log('Decoded Server Data:', decodedServer)
+
+        return {
+          publicKey: account.pubkey.toBase58(), // Convert publicKey to a string
+          ...decodedServer // Spread the decoded server data into the object
         }
-      ]
-    });
+      })
 
-    // Decode each account data to get the server details
-    const servers = accounts.map((account) => {
-      // Decode server data
-      const decodedServer = program.account.server.coder.accounts.decode('Server', account.account.data);
-
-      console.log('Decoded Server Data:', decodedServer);
-
-      return {
-        publicKey: account.pubkey.toBase58(), // Convert publicKey to a string
-        ...decodedServer // Spread the decoded server data into the object
-      };
-    });
-
-    console.log('Servers:', servers);
-    setActiveServers(servers);
-  } catch (error) {
-    console.error('Failed to fetch servers for user:', error);
-  }
-}, []);
-
+      console.log('Servers:', servers)
+      setActiveServers(servers)
+    } catch (error) {
+      console.error('Failed to fetch servers for user:', error)
+    }
+  }, [])
 
   useEffect(() => {
     if (publicKey) {
@@ -177,7 +173,9 @@ export default function SubscribeCard() {
                     <h1 className="text-2xl font-bold text-center mb-6">
                       Submit your server
                     </h1>
-                    <p className='text-center mb-4 text-slate-100'>Under development, please switch wallet to dev mode</p>
+                    <p className="text-center mb-4 text-slate-100">
+                      Under development, please switch wallet to dev mode
+                    </p>
 
                     <div className="w-full flex flex-col xs:flex-col md:flex-row gap-4 justify-center items-center">
                       <input
@@ -204,9 +202,20 @@ export default function SubscribeCard() {
                         onClick={() => handleSubmitServer()}
                         className="btn btn-primary w-full md:max-w-40"
                       >
-                        Submit
+                        {!isLoading ? (
+                          'Submit'
+                        ) : (
+                          <span className="loading loading-spinner loading-sm"></span>
+                        )}
                       </button>
                     </div>
+                    <p
+                      className={`text-center mt-4 ${
+                        notice.type === 'err' ? 'text-error' : 'text-success'
+                      }`}
+                    >
+                      {notice?.msg}
+                    </p>
 
                     <h1 className="text-2xl font-bold text-center mt-16 mb-8">
                       Your servers
