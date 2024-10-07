@@ -6,14 +6,12 @@ import { BN, web3 } from '@project-serum/anchor' // Import BN
 import { PublicKey } from '@solana/web3.js'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { AnchorProvider, AnchorError, Wallet } from '@coral-xyz/anchor'
-import { formatUTCDate } from '@/utils/formatUTCDate'
-import { fetchJupiterPrice } from '@/lib/jupiter'
+import { AnchorProvider, AnchorError } from '@coral-xyz/anchor'
 import { ipSchema, portSchema } from '@/utils/validationSchemas'
 interface UsrServers {
   owner: string
   ipAddress: string
-  portNumber: string
+  portNum: string
   connectionType: string
   publicKey: string
 }
@@ -22,6 +20,7 @@ export default function SubscribeCard() {
   const { publicKey } = useWallet()
 
   const [isLoading, setIsLoading] = useState(false)
+  const [listIsLoading, setListIsLoading] = useState(true)
   const [activeServers, setActiveServers] = useState<Array<UsrServers>>([])
   const [ipAddress, setIpAddress] = useState('')
   const [portNum, setPortNum] = useState('')
@@ -84,6 +83,10 @@ export default function SubscribeCard() {
       })
       setNotice({ msg: 'Server submited successfully', type: 'success' })
       // getServerDetails(server.publicKey.toBase58())
+      if (publicKey) {
+        setListIsLoading(true)
+        getServerList(publicKey)
+      }
     } catch (err) {
       if (err instanceof AnchorError) {
         setNotice({ msg: err.error.errorMessage, type: 'err' })
@@ -103,6 +106,9 @@ export default function SubscribeCard() {
       const accounts = await connection.getProgramAccounts(program.programId, {
         filters: [
           {
+            dataSize: 78 // number of bytes
+          },
+          {
             memcmp: {
               offset: 8, // Adjust based on where the owner field is in the Server struct
               bytes: userPublicKey.toBase58()
@@ -114,12 +120,12 @@ export default function SubscribeCard() {
       // Decode each account data to get the server details
       const servers = accounts.map((account) => {
         // Decode server data
+
+        // console.log(program.account.server.coder.accounts)
         const decodedServer = program.account.server.coder.accounts.decode(
           'Server',
           account.account.data
         )
-
-        console.log('Decoded Server Data:', decodedServer)
 
         return {
           publicKey: account.pubkey.toBase58(), // Convert publicKey to a string
@@ -127,10 +133,11 @@ export default function SubscribeCard() {
         }
       })
 
-      console.log('Servers:', servers)
       setActiveServers(servers)
     } catch (error) {
       console.error('Failed to fetch servers for user:', error)
+    } finally {
+      setListIsLoading(false)
     }
   }, [])
 
@@ -220,30 +227,39 @@ export default function SubscribeCard() {
                     <h1 className="text-2xl font-bold text-center mt-16 mb-8">
                       Your servers
                     </h1>
-                    {activeServers.length === 0 ? (
-                      <p className="text-center">No servers found</p>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full lg:w-1/2 table-auto mx-auto mb-14">
-                          <thead>
-                            <tr>
-                              <th className="text-left">IP Address</th>
-                              <th className="text-left">Port</th>
-                              <th className="text-left">Type</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {activeServers.map((server, index) => (
-                              <tr key={index}>
-                                <td className="py-1">
-                                  {server.ipAddress.toString()}
-                                </td>
-                                <td>{server.portNumber.toString()}</td>
-                                <td>{server.connectionType}</td>
+                    {!listIsLoading ? (
+                      activeServers.length === 0 ? (
+                        <p className="text-center">No servers found</p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full lg:w-1/2 table-auto mx-auto mb-14">
+                            <thead>
+                              <tr>
+                                <th className="text-left">IP Address</th>
+                                <th className="text-left">Port</th>
+                                <th className="text-left">Type</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {activeServers.map((server, index) => (
+                                <tr key={index}>
+                                  <td className="py-1">
+                                    {server.ipAddress.toString()}
+                                  </td>
+                                  <td>{server.portNum.toString()}</td>
+                                  <td>{server.connectionType}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )
+                    ) : (
+                      <div className="text-center">
+                        <span className="loading loading-ball loading-sm " />
+                        <span className="loading loading-ball loading-sm" />
+                        <span className="loading loading-ball loading-md" />
+                        <span className="loading loading-ball loading-lg" />
                       </div>
                     )}
                   </div>

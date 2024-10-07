@@ -20,6 +20,7 @@ export default function SubscribeCard() {
   const { publicKey } = useWallet()
 
   const [isLoading, setIsLoading] = useState(false)
+  const [listIsLoading, setListIsLoading] = useState(true)
   const [notice, setNotice] = useState({ msg: '', type: '' })
 
   const [userPlans, setUserPlans] = useState<Array<UsrPlans>>([])
@@ -80,6 +81,10 @@ export default function SubscribeCard() {
       setNotice({ msg: 'The purchase was made successfully', type: 'success' })
 
       getPlanDetails(plan.publicKey.toBase58())
+      if (publicKey) {
+        setListIsLoading(true)
+        getPlansByUser(publicKey)
+      }
     } catch (err) {
       if (err instanceof AnchorError) {
         setNotice({
@@ -104,6 +109,9 @@ export default function SubscribeCard() {
       // Fetch all accounts for the program where the owner is the user's public key
       const accounts = await connection.getProgramAccounts(program.programId, {
         filters: [
+          {
+            dataSize: 112 // number of bytes
+          },
           {
             memcmp: {
               offset: 8, // Adjust based on where the owner field is in the Plan struct
@@ -130,6 +138,8 @@ export default function SubscribeCard() {
       setUserPlans(plans)
     } catch (error) {
       console.error('Failed to fetch plans for user:', error)
+    } finally {
+      setListIsLoading(false)
     }
   }, [])
 
@@ -242,41 +252,48 @@ export default function SubscribeCard() {
                     <h1 className="text-2xl font-bold text-center mt-16 mb-8">
                       Your plans
                     </h1>
-                    {userPlans.length === 0 ? (
-                      <p className="text-center">No plans found</p>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full lg:w-1/2 table-auto mx-auto mb-14">
-                          <thead>
-                            <tr>
-                              <th className="text-left">Owner</th>
-                              <th className="text-left">Expiry Date</th>
-                              <th className="text-left">Action</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {userPlans.map((plan, index) => (
-                              <tr key={index}>
-                                <td className="py-1">
-                                  {plan.publicKey.toString()}
-                                </td>
-                                <td>
-                                  {formatUTCDate(
-                                    plan.expirationDate.toString()
-                                  )}
-                                </td>
-                                <td>
-                                  <button
-                                    onClick={() => openDialog()}
-                                    className="btn btn-outline btn-xs"
-                                  >
-                                    Config
-                                  </button>
-                                </td>
+                    {!listIsLoading ? (
+                      userPlans.length === 0 ? (
+                        <p className="text-center">No plans found</p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full lg:w-1/2 table-auto mx-auto mb-14">
+                            <thead>
+                              <tr>
+                                <th className="text-left">Owner</th>
+                                <th className="text-left">Expiry Date</th>
+                                <th className="text-left">Action</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {userPlans.map((plan, index) => (
+                                <tr key={index}>
+                                  <td className="py-1">
+                                    {plan.publicKey.toString()}
+                                  </td>
+                                  <td>
+                                    {formatUTCDate(Number(plan.expirationDate))}
+                                  </td>
+                                  <td>
+                                    <button
+                                      onClick={() => openDialog()}
+                                      className="btn btn-outline btn-xs"
+                                    >
+                                      Config
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )
+                    ) : (
+                      <div className="text-center">
+                        <span className="loading loading-ball loading-sm " />
+                        <span className="loading loading-ball loading-sm" />
+                        <span className="loading loading-ball loading-md" />
+                        <span className="loading loading-ball loading-lg" />
                       </div>
                     )}
                   </div>

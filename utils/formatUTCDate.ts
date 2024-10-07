@@ -1,4 +1,6 @@
-export function formatUTCDate(dateString: string) {
-  const date = new Date(dateString)
-  return date.toUTCString() // Format as UTC string
+import dayjs from "dayjs"
+
+export function formatUTCDate(dateString: number) {
+  return dayjs.unix(dateString).format('YYYY-MM-DD HH:mm')
+
 }
