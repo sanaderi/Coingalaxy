@@ -103,37 +103,24 @@ export default function SubscribeCard() {
 
     try {
       // Fetch all accounts for the program where the owner is the user's public key
-      const accounts = await connection.getProgramAccounts(program.programId, {
-        filters: [
-          {
-            dataSize: 78 // number of bytes
-          },
-          {
-            memcmp: {
-              offset: 8, // Adjust based on where the owner field is in the Server struct
-              bytes: userPublicKey.toBase58()
-            }
+      const servers = await program.account.server.all([
+        {
+          memcmp: {
+            offset: 8, // Adjust based on where the owner field is in the Plan struct
+            bytes: userPublicKey.toBase58()
           }
-        ]
-      })
-
-      // Decode each account data to get the server details
-      const servers = accounts.map((account) => {
-        // Decode server data
-
-        // console.log(program.account.server.coder.accounts)
-        const decodedServer = program.account.server.coder.accounts.decode(
-          'Server',
-          account.account.data
-        )
-
-        return {
-          publicKey: account.pubkey.toBase58(), // Convert publicKey to a string
-          ...decodedServer // Spread the decoded server data into the object
         }
-      })
+      ])
 
-      setActiveServers(servers)
+      const serversArray = servers.map((plan) => ({
+        owner: plan.account.owner.toBase58(), // Convert the owner publicKey to base58
+        ipAddress: plan.account.ipAddress,
+        portNum: plan.account.portNum,
+        connectionType: plan.account.connectionType,
+        publicKey: plan.publicKey.toBase58()
+      }))
+
+      setActiveServers(serversArray)
     } catch (error) {
       console.error('Failed to fetch servers for user:', error)
     } finally {

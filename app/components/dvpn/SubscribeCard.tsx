@@ -107,35 +107,22 @@ export default function SubscribeCard() {
 
     try {
       // Fetch all accounts for the program where the owner is the user's public key
-      const accounts = await connection.getProgramAccounts(program.programId, {
-        filters: [
-          {
-            dataSize: 112 // number of bytes
-          },
-          {
-            memcmp: {
-              offset: 8, // Adjust based on where the owner field is in the Plan struct
-              bytes: userPublicKey.toBase58()
-            }
+      const plans = await program.account.plan.all([
+        {
+          memcmp: {
+            offset: 8, // Adjust based on where the owner field is in the Plan struct
+            bytes: userPublicKey.toBase58()
           }
-        ]
-      })
-
-      // Decode each account data to get the plan details
-      const plans = accounts.map((account) => {
-        const planData = program.account.plan.coder.accounts.decode(
-          'Plan',
-          account.account.data
-        )
-        return {
-          publicKey: account.pubkey, // Access and return the publicKey as a string
-          ...planData // Spread the decoded plan data into the object
         }
-      })
+      ])
 
-      console.log(plans)
+      const plansArray = plans.map((plan) => ({
+        owner: plan.account.owner.toBase58(), // Convert the owner publicKey to base58
+        expirationDate: plan.account.expirationDate.toNumber(), // Convert i64 to JavaScript number
+        publicKey: plan.publicKey.toBase58()
+      }))
 
-      setUserPlans(plans)
+      setUserPlans(plansArray)
     } catch (error) {
       console.error('Failed to fetch plans for user:', error)
     } finally {
@@ -268,9 +255,7 @@ export default function SubscribeCard() {
                             <tbody>
                               {userPlans.map((plan, index) => (
                                 <tr key={index}>
-                                  <td className="py-1">
-                                    {plan.publicKey.toString()}
-                                  </td>
+                                  <td className="py-1">{plan.publicKey}</td>
                                   <td>
                                     {formatUTCDate(Number(plan.expirationDate))}
                                   </td>
