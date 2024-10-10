@@ -21,6 +21,7 @@ export default function SubscribeCard() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [listIsLoading, setListIsLoading] = useState(true)
+  const [serverConfigHelp, setServerConfigHelp] = useState(false)
   const [activeServers, setActiveServers] = useState<Array<UsrServers>>([])
   const [ipAddress, setIpAddress] = useState('')
   const [portNum, setPortNum] = useState('')
@@ -59,6 +60,18 @@ export default function SubscribeCard() {
     }
     // return
     setIsLoading(true)
+    setServerConfigHelp(false)
+    let serverStatus = await checkServerStatus()
+    if (!serverStatus) {
+      setNotice({
+        msg: 'Your server config has issue, please read document',
+        type: 'err'
+      })
+      setServerConfigHelp(true)
+      setIsLoading(false)
+      return
+    }
+
     try {
       const program = getProgram()
       const provider = program.provider as AnchorProvider
@@ -95,6 +108,16 @@ export default function SubscribeCard() {
       }
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  //Check server config
+  const checkServerStatus = async () => {
+    try {
+      const response = await fetch(`http://${ipAddress}:9090/check_status`)
+      return response.status === 200 ? true : false
+    } catch {
+      return false
     }
   }
 
@@ -210,6 +233,46 @@ export default function SubscribeCard() {
                     >
                       {notice?.msg}
                     </p>
+
+                    {/* Set server help */}
+                    {serverConfigHelp ? (
+                      <div className="w-full lg:w-[90%] xl:w-1/2 mx-auto text-center mt-10">
+                        <h2 className="text-xl font-bold text-center mb-6">
+                          To Config server follow this step:
+                        </h2>
+                        <div className="mockup-code text-left">
+                          <pre data-prefix="$">
+                            <code>
+                              mkdir DVPN && cd DVPN && git init && git
+                              sparse-checkout init --cone && git sparse-checkout
+                              set dvpn-server
+                            </code>
+                          </pre>
+                        </div>
+                        <div className="text-left my-5">Then</div>
+                        <div className="mockup-code text-left">
+                          <pre data-prefix="$">
+                            <code>
+                              git pull
+                              https://github.com/sanaderi/Solana-DVPN.git main
+                            </code>
+                          </pre>
+                        </div>
+                        <div className="text-left my-5">Then</div>
+                        <div className="mockup-code text-left">
+                          <pre data-prefix="$">
+                            <code>cd dvpn-server && ./install.sh</code>
+                          </pre>
+                        </div>
+                        <div className="text-left my-5">
+                          This creates a service to communicate between the
+                          server and the VPN program.
+                        </div>
+                      </div>
+                    ) : (
+                      ''
+                    )}
+                    {/* End set server help */}
 
                     <h1 className="text-2xl font-bold text-center mt-16 mb-8">
                       Your servers
