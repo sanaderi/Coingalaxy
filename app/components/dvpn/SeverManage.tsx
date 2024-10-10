@@ -114,7 +114,15 @@ export default function SubscribeCard() {
   //Check server config
   const checkServerStatus = async () => {
     try {
-      const response = await fetch(`http://${ipAddress}:9090/check_status`)
+      const response = await fetch(`/api/proxy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ip_address: ipAddress
+        })
+      })
       return response.status === 200 ? true : false
     } catch {
       return false
