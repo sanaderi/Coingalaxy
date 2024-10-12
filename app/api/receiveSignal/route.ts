@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       )
 
       return NextResponse.json({
-        message: 'Data saved successfully',
+        message: 'Swaped run',
         data: { msg: 'task run', ip, result: result_swap }
       })
     } else {
