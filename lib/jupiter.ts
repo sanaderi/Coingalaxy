@@ -25,7 +25,6 @@ if (!rpcUrl) throw new Error('Set rpc url')
 const connection = new Connection(rpcUrl)
 //Swap method
 
-
 export const jupiterSwap = async (
   sourceToken: string,
   destinationToken: string,
@@ -35,7 +34,7 @@ export const jupiterSwap = async (
     const secretKey = Uint8Array.from(address)
     const keypair = Keypair.fromSecretKey(secretKey)
 
-    const amount = await getTokenBalance(
+    const amount = await getTokenBalance4(
       keypair.publicKey.toBase58(),
       sourceToken
     )
@@ -110,16 +109,22 @@ export const jupiterSwap = async (
 
     return `https://solscan.io/tx/${txid}`
   } catch (error) {
-    // let receiver = process.env.BOT_OWNER_EMAIL
-    // if (receiver)
-    //   await resend.emails.send({
-    //     from: 'Support <support@coingalaxy.info>',
-    //     to: [receiver],
-    //     subject: 'Error on swap',
-    //     react: EmailTemplate({ txt: `Some error on swap: ${error}` })
-    //   })
+    try {
+      await fetch('https://coingalaxy.info/api/sendEmail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          subject: 'Error on swap',
+          txt: `Some error on swap`
+        })
+      })
+    } catch (mail_error) {
+      console.error(mail_error)
+    }
+    console.log(error)
 
-    console.error(error)
     return 'error'
   }
 }
