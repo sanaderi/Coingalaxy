@@ -34,7 +34,7 @@ export const jupiterSwap = async (
     const secretKey = Uint8Array.from(address)
     const keypair = Keypair.fromSecretKey(secretKey)
 
-    const amount = await getTokenBalance4(
+    const amount = await getTokenBalance(
       keypair.publicKey.toBase58(),
       sourceToken
     )
