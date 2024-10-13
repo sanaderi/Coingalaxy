@@ -16,8 +16,6 @@ export const fetchJupiterPrice = async (tokenSymbol: string) => {
   }
 }
 
-import { Resend } from 'resend'
-import { EmailTemplate } from '@/app/components/email/template'
 import { getTokenBalance } from '@/utils/splTokenBalance'
 import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js'
 // Replace with your actual Keypair
@@ -26,7 +24,7 @@ const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL
 if (!rpcUrl) throw new Error('Set rpc url')
 const connection = new Connection(rpcUrl)
 //Swap method
-const resend = new Resend(process.env.RESEND_API_KEY)
+
 
 export const jupiterSwap = async (
   sourceToken: string,
@@ -112,14 +110,14 @@ export const jupiterSwap = async (
 
     return `https://solscan.io/tx/${txid}`
   } catch (error) {
-    let receiver = process.env.BOT_OWNER_EMAIL
-    if (receiver)
-      await resend.emails.send({
-        from: 'Support <support@coingalaxy.info>',
-        to: [receiver],
-        subject: 'Error on swap',
-        react: EmailTemplate({ txt: `Some error on swap: ${error}` })
-      })
+    // let receiver = process.env.BOT_OWNER_EMAIL
+    // if (receiver)
+    //   await resend.emails.send({
+    //     from: 'Support <support@coingalaxy.info>',
+    //     to: [receiver],
+    //     subject: 'Error on swap',
+    //     react: EmailTemplate({ txt: `Some error on swap: ${error}` })
+    //   })
 
     console.error(error)
     return 'error'
