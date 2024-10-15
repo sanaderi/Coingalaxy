@@ -14,6 +14,7 @@ interface UsrServers {
   portNum: string
   connectionType: string
   publicKey: string
+  clientCount: Number
 }
 export default function SubscribeCard() {
   const { connection } = useConnection()
@@ -79,21 +80,17 @@ export default function SubscribeCard() {
       // Generate a new keypair for the server
       const server = web3.Keypair.generate()
 
-      // Derive the PDA using the same seed
-      const [pdaPublicKey, bump] = await PublicKey.findProgramAddressSync(
-        [Buffer.from('payment')], // Ensure this matches the seed in your Rust program
-        program.programId
-      )
-
       // Call the `createServer` instruction defined in the IDL
-      await program.rpc.createServer(ipAddress, portNum, connectionType, {
-        accounts: {
+      await program.methods
+        .createServer(ipAddress, portNum, connectionType)
+        .accounts({
           server: server.publicKey,
           user: provider.wallet.publicKey,
           systemProgram: web3.SystemProgram.programId
-        },
-        signers: [server]
-      })
+        })
+        .signers([server])
+        .rpc()
+
       setNotice({ msg: 'Server submited successfully', type: 'success' })
       // getServerDetails(server.publicKey.toBase58())
       if (publicKey) {
@@ -148,6 +145,7 @@ export default function SubscribeCard() {
         ipAddress: plan.account.ipAddress,
         portNum: plan.account.portNum,
         connectionType: plan.account.connectionType,
+        clientCount: plan.account.clientCount,
         publicKey: plan.publicKey.toBase58()
       }))
 
@@ -293,19 +291,23 @@ export default function SubscribeCard() {
                           <table className="w-full lg:w-1/2 table-auto mx-auto mb-14">
                             <thead>
                               <tr>
+                                <th className="text-left">Key</th>
                                 <th className="text-left">IP Address</th>
                                 <th className="text-left">Port</th>
                                 <th className="text-left">Type</th>
+                                <th className="text-left">Client count</th>
                               </tr>
                             </thead>
                             <tbody>
                               {activeServers.map((server, index) => (
                                 <tr key={index}>
+                                  <td>{server.publicKey.toString()}</td>
                                   <td className="py-1">
                                     {server.ipAddress.toString()}
                                   </td>
                                   <td>{server.portNum.toString()}</td>
                                   <td>{server.connectionType}</td>
+                                  <td>{server.clientCount.toString()}</td>
                                 </tr>
                               ))}
                             </tbody>

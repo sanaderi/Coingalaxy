@@ -11,6 +11,11 @@
           "isSigner": true
         },
         {
+          "name": "server",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "user",
           "isMut": true,
           "isSigner": true
@@ -84,6 +89,10 @@
             "type": "publicKey"
           },
           {
+            "name": "server",
+            "type": "publicKey"
+          },
+          {
             "name": "expirationDate",
             "type": "i64"
           }
@@ -110,6 +119,26 @@
           {
             "name": "connectionType",
             "type": "string"
+          },
+          {
+            "name": "claimable",
+            "type": "i64"
+          },
+          {
+            "name": "unclaimabe",
+            "type": "i64"
+          },
+          {
+            "name": "clientCount",
+            "type": "i64"
+          },
+          {
+            "name": "lastClientExpiry",
+            "type": "i64"
+          },
+          {
+            "name": "startDate",
+            "type": "i64"
           }
         ]
       }
@@ -120,9 +149,14 @@
       "code": 6000,
       "name": "ExpirationTooSoon",
       "msg": "The expiration date is less than 10 days."
+    },
+    {
+      "code": 6001,
+      "name": "InvalidOwner",
+      "msg": "Invalid owner provided."
     }
   ],
   "metadata": {
-    "address": "6cGNiQMuBXeshM5RqXMpAdVSB1YrUN3cUZ8i5hvZrMN3"
+    "address": "DPVrfneJ2xeneEmXNMDSHWFoA7gzkc6D97MSdxqte8hE"
   }
 }

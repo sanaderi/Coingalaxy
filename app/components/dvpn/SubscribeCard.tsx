@@ -14,6 +14,7 @@ interface UsrPlans {
   owner: string
   expirationDate: string
   publicKey: string
+  server: string
 }
 export default function SubscribeCard() {
   const { connection } = useConnection()
@@ -49,6 +50,14 @@ export default function SubscribeCard() {
     setIsLoading(true)
     setNotice({ msg: '', type: '' })
 
+    const randomServer = await selectRandomServer()
+
+    if (!randomServer) {
+      setNotice({ msg: 'Error finding server', type: 'err' })
+      setIsLoading(false)
+      return
+    } else console.log(randomServer.toBase58())
+
     try {
       const program = getProgram()
       const provider = program.provider as AnchorProvider
@@ -68,16 +77,18 @@ export default function SubscribeCard() {
       )
 
       // Call the `createPlan` instruction defined in the IDL
-      await program.rpc.createPlan(new BN(expirationDate), {
-        accounts: {
+      await program.methods
+        .createPlan(new BN(expirationDate))
+        .accounts({
           plan: plan.publicKey,
+          server: randomServer,
           user: provider.wallet.publicKey,
           systemProgram: web3.SystemProgram.programId,
           priceUpdate: SOL_PRICE_FEED_ID,
           pdaAccount: pdaPublicKey
-        },
-        signers: [plan]
-      })
+        })
+        .signers([plan])
+        .rpc()
       setNotice({ msg: 'The purchase was made successfully', type: 'success' })
 
       getPlanDetails(plan.publicKey.toBase58())
@@ -102,6 +113,21 @@ export default function SubscribeCard() {
     }
   }
 
+  //Random server for client
+  const selectRandomServer = async () => {
+    const program = getProgram()
+    const servers = await program.account.server.all()
+    if (servers.length > 0) {
+      // Get a random index between 0 and servers.length - 1
+      const randomIndex = Math.floor(Math.random() * servers.length)
+      const randomServer = servers[randomIndex]
+
+      return randomServer.publicKey
+    } else {
+      return false
+    }
+  }
+
   const getPlansByUser = useCallback(async (userPublicKey: PublicKey) => {
     const program = getProgram()
 
@@ -119,7 +145,8 @@ export default function SubscribeCard() {
       const plansArray = plans.map((plan) => ({
         owner: plan.account.owner.toBase58(), // Convert the owner publicKey to base58
         expirationDate: plan.account.expirationDate.toNumber(), // Convert i64 to JavaScript number
-        publicKey: plan.publicKey.toBase58()
+        publicKey: plan.publicKey.toBase58(),
+        server: plan.account.server.toBase58()
       }))
 
       setUserPlans(plansArray)
@@ -239,6 +266,7 @@ export default function SubscribeCard() {
                     <h1 className="text-2xl font-bold text-center mt-16 mb-8">
                       Your plans
                     </h1>
+
                     {!listIsLoading ? (
                       userPlans.length === 0 ? (
                         <p className="text-center">No plans found</p>
@@ -255,7 +283,8 @@ export default function SubscribeCard() {
                             <tbody>
                               {userPlans.map((plan, index) => (
                                 <tr key={index}>
-                                  <td className="py-1">{plan.publicKey}</td>
+                                  {/* <td className="py-1">{plan.publicKey}</td> */}
+                                  <td className="py-1">{plan.server}</td>
                                   <td>
                                     {formatUTCDate(Number(plan.expirationDate))}
                                   </td>
