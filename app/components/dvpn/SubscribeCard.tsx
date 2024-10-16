@@ -10,11 +10,13 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { AnchorProvider, AnchorError, Wallet } from '@coral-xyz/anchor'
 import { formatUTCDate } from '@/utils/formatUTCDate'
 import { fetchJupiterPrice } from '@/lib/jupiter'
+import { createRandomString } from '@/utils/createRandomString'
 interface UsrPlans {
   owner: string
   expirationDate: string
   publicKey: string
   server: string
+  username: string
 }
 export default function SubscribeCard() {
   const { connection } = useConnection()
@@ -27,8 +29,6 @@ export default function SubscribeCard() {
   const [userPlans, setUserPlans] = useState<Array<UsrPlans>>([])
   const [solPrice, setPriceData] = useState(0)
 
-  const dialogRef = useRef(null)
-
   useEffect(() => {
     async function getPrice() {
       const data = await fetchJupiterPrice('SOL') // Fetch SOL price as an example
@@ -38,12 +38,13 @@ export default function SubscribeCard() {
     getPrice()
   }, [])
 
+  const dialogRef = useRef<HTMLDialogElement>(null)
   const openDialog = () => {
-    // dialogRef.current?.showModal()
+    dialogRef.current?.showModal()
   }
 
   const closeDialog = () => {
-    // dialogRef.current?.close()
+    dialogRef.current?.close()
   }
 
   const handleCreatePlan = async (expirationDate: number) => {
@@ -76,9 +77,12 @@ export default function SubscribeCard() {
         program.programId
       )
 
+      //Generate random username
+      const username = await createRandomString(8)
+
       // Call the `createPlan` instruction defined in the IDL
       await program.methods
-        .createPlan(new BN(expirationDate))
+        .createPlan(new BN(expirationDate), username)
         .accounts({
           plan: plan.publicKey,
           server: randomServer,
@@ -146,7 +150,8 @@ export default function SubscribeCard() {
         owner: plan.account.owner.toBase58(), // Convert the owner publicKey to base58
         expirationDate: plan.account.expirationDate.toNumber(), // Convert i64 to JavaScript number
         publicKey: plan.publicKey.toBase58(),
-        server: plan.account.server.toBase58()
+        server: plan.account.server.toBase58(),
+        username: plan.account.username
       }))
 
       setUserPlans(plansArray)
@@ -275,7 +280,7 @@ export default function SubscribeCard() {
                           <table className="w-full lg:w-1/2 table-auto mx-auto mb-14">
                             <thead>
                               <tr>
-                                <th className="text-left">Owner</th>
+                                <th className="text-left">Username</th>
                                 <th className="text-left">Expiry Date</th>
                                 <th className="text-left">Action</th>
                               </tr>
@@ -284,7 +289,7 @@ export default function SubscribeCard() {
                               {userPlans.map((plan, index) => (
                                 <tr key={index}>
                                   {/* <td className="py-1">{plan.publicKey}</td> */}
-                                  <td className="py-1">{plan.server}</td>
+                                  <td className="py-1">{plan.username}</td>
                                   <td>
                                     {formatUTCDate(Number(plan.expirationDate))}
                                   </td>

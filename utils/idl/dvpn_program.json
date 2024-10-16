@@ -40,6 +40,10 @@
         {
           "name": "expirationDate",
           "type": "i64"
+        },
+        {
+          "name": "username",
+          "type": "string"
         }
       ]
     },
@@ -95,6 +99,10 @@
           {
             "name": "expirationDate",
             "type": "i64"
+          },
+          {
+            "name": "username",
+            "type": "string"
           }
         ]
       }
@@ -157,6 +165,6 @@
     }
   ],
   "metadata": {
-    "address": "DPVrfneJ2xeneEmXNMDSHWFoA7gzkc6D97MSdxqte8hE"
+    "address": "BXgTH4Ff43DNtgoUHbfMUvYzXrDHknyuoYJawtd2Dun6"
   }
 }

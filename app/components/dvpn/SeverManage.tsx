@@ -61,17 +61,17 @@ export default function SubscribeCard() {
     }
     // return
     setIsLoading(true)
-    setServerConfigHelp(false)
-    let serverStatus = await checkServerStatus()
-    if (!serverStatus) {
-      setNotice({
-        msg: 'Your server config has issue, please read document',
-        type: 'err'
-      })
-      setServerConfigHelp(true)
-      setIsLoading(false)
-      return
-    }
+    // setServerConfigHelp(false)
+    // let serverStatus = await checkServerStatus()
+    // if (!serverStatus) {
+    //   setNotice({
+    //     msg: 'Your server config has issue, please read document',
+    //     type: 'err'
+    //   })
+    //   setServerConfigHelp(true)
+    //   setIsLoading(false)
+    //   return
+    // }
 
     try {
       const program = getProgram()
@@ -291,23 +291,30 @@ export default function SubscribeCard() {
                           <table className="w-full lg:w-1/2 table-auto mx-auto mb-14">
                             <thead>
                               <tr>
-                                <th className="text-left">Key</th>
                                 <th className="text-left">IP Address</th>
                                 <th className="text-left">Port</th>
                                 <th className="text-left">Type</th>
-                                <th className="text-left">Client count</th>
+                                <th className="text-center">Client count</th>
+                                <th className="text-center">Action</th>
                               </tr>
                             </thead>
                             <tbody>
                               {activeServers.map((server, index) => (
                                 <tr key={index}>
-                                  <td>{server.publicKey.toString()}</td>
+                                  {/* <td>{server.publicKey.toString()}</td> */}
                                   <td className="py-1">
                                     {server.ipAddress.toString()}
                                   </td>
                                   <td>{server.portNum.toString()}</td>
                                   <td>{server.connectionType}</td>
-                                  <td>{server.clientCount.toString()}</td>
+                                  <td className="text-center">
+                                    {server.clientCount.toString()}
+                                  </td>
+                                  <td className="text-center">
+                                    <button className="btn btn-outline btn-xs btn-success ">
+                                      Claim reward
+                                    </button>
+                                  </td>
                                 </tr>
                               ))}
                             </tbody>
