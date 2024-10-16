@@ -25,6 +25,10 @@ export default function SubscribeCard() {
   const [isLoading, setIsLoading] = useState(false)
   const [listIsLoading, setListIsLoading] = useState(true)
   const [notice, setNotice] = useState({ msg: '', type: '' })
+  const [serverDetails, setServerDetails] = useState({
+    ip_address: '',
+    connection_type: ''
+  })
 
   const [userPlans, setUserPlans] = useState<Array<UsrPlans>>([])
   const [solPrice, setPriceData] = useState(0)
@@ -39,7 +43,13 @@ export default function SubscribeCard() {
   }, [])
 
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const openDialog = () => {
+  const openConfig = async (serverKey: string) => {
+    const serverDetails = await getServerDetails(serverKey)
+    if (serverDetails)
+      setServerDetails({
+        ip_address: serverDetails.ipAddress,
+        connection_type: serverDetails.connectionType
+      })
     dialogRef.current?.showModal()
   }
 
@@ -185,6 +195,20 @@ export default function SubscribeCard() {
     }
   }
 
+  const getServerDetails = async (key: string) => {
+    const serverPublicKey = new PublicKey(key)
+    const program = getProgram()
+
+    try {
+      // Fetch the Server account details using its public key
+      const serverDetails = await program.account.server.fetch(serverPublicKey)
+
+      return serverDetails
+    } catch (error) {
+      return false
+    }
+  }
+
   return (
     <div>
       <div className="container">
@@ -295,7 +319,7 @@ export default function SubscribeCard() {
                                   </td>
                                   <td>
                                     <button
-                                      onClick={() => openDialog()}
+                                      onClick={() => openConfig(plan.server)}
                                       className="btn btn-outline btn-xs"
                                     >
                                       Config
@@ -326,15 +350,57 @@ export default function SubscribeCard() {
                 className="modal"
               >
                 <div className="modal-box">
-                  <h3 className="text-lg font-bold">Server config</h3>
-                  <p className="py-4">
-                    This section is under development (Generate random user,
-                    pass for random server is stored in account creation
-                    proccess and set in destination server (if exists delete and
-                    recreate username)) for change server need to new sign
-                    transaction , Press ESC key or click the button below to
-                    close
-                  </p>
+                  <h3 className="text-lg font-bold mb-4">Server config</h3>
+                  <table className="w-full  table-auto mx-auto mb-14">
+                    <tbody>
+                      <tr>
+                        <td className="font-bold py-2">Server IP</td>
+                        <td className="text-center">
+                          {serverDetails.ip_address}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold py-2">Type</td>
+                        <td className="text-center">
+                          {serverDetails.connection_type}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold py-2">Password</td>
+                        <td className="text-center">
+                          <button className="btn btn-outline btn-xs btn-warning">
+                            Show
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold py-2">
+                          Recommended App for Android
+                        </td>
+                        <td className="text-center">
+                          <a
+                            href="https://play.google.com/store/apps/details?id=com.napsternetlabs.napsternetv"
+                            target="_blank"
+                            className="btn btn-outline btn-xs btn-info"
+                          >
+                            Download
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">Recommended App for iOS</td>
+                        <td className="text-center">
+                          <a
+                            href="https://apps.apple.com/us/app/npv-tunnel/id1629465476"
+                            target="_blank"
+                            className="btn btn-outline btn-xs btn-info"
+                          >
+                            Download
+                          </a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                   <div className="modal-action">
                     <form method="dialog">
                       <button className="btn">Close</button>
