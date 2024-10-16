@@ -61,17 +61,17 @@ export default function SubscribeCard() {
     }
     // return
     setIsLoading(true)
-    // setServerConfigHelp(false)
-    // let serverStatus = await checkServerStatus()
-    // if (!serverStatus) {
-    //   setNotice({
-    //     msg: 'Your server config has issue, please read document',
-    //     type: 'err'
-    //   })
-    //   setServerConfigHelp(true)
-    //   setIsLoading(false)
-    //   return
-    // }
+    setServerConfigHelp(false)
+    let serverStatus = await checkServerStatus()
+    if (!serverStatus) {
+      setNotice({
+        msg: 'Your server config has issue, please read document',
+        type: 'err'
+      })
+      setServerConfigHelp(true)
+      setIsLoading(false)
+      return
+    }
 
     try {
       const program = getProgram()
