@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         destinationToken = jupToken
         runSwap = true
         console.info('zigzag signal buy, fgh latest: buy')
-      } else if (body.type === 'sell') {
+      } else if (body.type === 'sell') { //It can run alone sell command
         sourceToken = jupToken
         destinationToken = usdcToken
         runSwap = true
