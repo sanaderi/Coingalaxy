@@ -49,12 +49,7 @@ export async function POST(request: NextRequest) {
     let destinationToken = ''
     let runSwap = false
     if (body.sender === 'fgh') {
-      if (body.type === 'buy' && zigzag === 'buy') {
-        sourceToken = usdcToken
-        destinationToken = jupToken
-        runSwap = true
-        console.info('fgh signal buy, zizag latest: buy')
-      } else if (body.type === 'sell') { //It can run alone sell command
+      if (body.type === 'sell') { //It can run alone sell command
         sourceToken = jupToken
         destinationToken = usdcToken
         runSwap = true
@@ -62,7 +57,7 @@ export async function POST(request: NextRequest) {
       }
       await kv.set('fgh', body.type)
     } else if (body.sender === 'zigzag') {
-      if (body.type === 'buy' && fgh === 'buy') {
+      if (body.type === 'buy' && fgh === 'buy') { //We have a HL and fgh in buy mode
         sourceToken = usdcToken
         destinationToken = jupToken
         runSwap = true
