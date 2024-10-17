@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         sourceToken = jupToken
         destinationToken = usdcToken
         runSwap = true
-        console.info('fgh signal sell, zizag latest: sell')
+        console.info('fgh signal sell')
       }
       await kv.set('fgh', body.type)
     } else if (body.sender === 'zigzag') {
@@ -67,11 +67,11 @@ export async function POST(request: NextRequest) {
         destinationToken = jupToken
         runSwap = true
         console.info('zigzag signal buy, fgh latest: buy')
-      } else if (body.type === 'sell' && fgh === 'sell') {
+      } else if (body.type === 'sell') {
         sourceToken = jupToken
         destinationToken = usdcToken
         runSwap = true
-        console.info('zigzag signal sell, fgh latest: sell')
+        console.info('zigzag signal sell')
       }
       await kv.set('zigzag', body.type)
     }
