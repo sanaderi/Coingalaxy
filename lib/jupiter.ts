@@ -117,7 +117,7 @@ export const jupiterSwap = async (
         },
         body: JSON.stringify({
           subject: 'Error on swap',
-          txt: `Some error on swap`
+          txt: `Some error on swap. ${error}`
         })
       })
     } catch (mail_error) {
