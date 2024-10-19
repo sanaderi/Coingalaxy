@@ -61,17 +61,17 @@ export default function SubscribeCard() {
     }
     // return
     setIsLoading(true)
-    // setServerConfigHelp(false)
-    // let serverStatus = await checkServerStatus()
-    // if (!serverStatus) {
-    //   setNotice({
-    //     msg: 'Your server config has issue, please read document',
-    //     type: 'err'
-    //   })
-    //   setServerConfigHelp(true)
-    //   setIsLoading(false)
-    //   return
-    // }
+    setServerConfigHelp(false)
+    let serverStatus = await checkServerStatus()
+    if (!serverStatus) {
+      setNotice({
+        msg: 'Your server config has issue, please read document',
+        type: 'err'
+      })
+      setServerConfigHelp(true)
+      setIsLoading(false)
+      return
+    }
 
     try {
       const program = getProgram()
@@ -119,8 +119,6 @@ export default function SubscribeCard() {
         program.programId
       )
 
-      console.log(bump)
-
       // Call the `createServer` instruction defined in the IDL
       await program.methods
         .claimIncome()
@@ -132,7 +130,7 @@ export default function SubscribeCard() {
         })
         .rpc()
 
-      setNotice({ msg: 'Server submited successfully', type: 'success' })
+      // setNotice({ msg: 'Server submited successfully', type: 'success' })
       // getServerDetails(server.publicKey.toBase58())
       if (publicKey) {
         setListIsLoading(true)
@@ -140,9 +138,9 @@ export default function SubscribeCard() {
       }
     } catch (err) {
       if (err instanceof AnchorError) {
-        setNotice({ msg: err.error.errorMessage, type: 'err' })
+        // setNotice({ msg: err.error.errorMessage, type: 'err' })
       } else {
-        setNotice({ msg: `TransactionError: ${err}`, type: 'err' })
+        // setNotice({ msg: `TransactionError: ${err}`, type: 'err' })
       }
     } finally {
       setIsLoading(false)
