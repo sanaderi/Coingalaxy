@@ -61,17 +61,17 @@ export default function SubscribeCard() {
     }
     // return
     setIsLoading(true)
-    setServerConfigHelp(false)
-    let serverStatus = await checkServerStatus()
-    if (!serverStatus) {
-      setNotice({
-        msg: 'Your server config has issue, please read document',
-        type: 'err'
-      })
-      setServerConfigHelp(true)
-      setIsLoading(false)
-      return
-    }
+    // setServerConfigHelp(false)
+    // let serverStatus = await checkServerStatus()
+    // if (!serverStatus) {
+    //   setNotice({
+    //     msg: 'Your server config has issue, please read document',
+    //     type: 'err'
+    //   })
+    //   setServerConfigHelp(true)
+    //   setIsLoading(false)
+    //   return
+    // }
 
     try {
       const program = getProgram()
@@ -89,6 +89,47 @@ export default function SubscribeCard() {
           systemProgram: web3.SystemProgram.programId
         })
         .signers([server])
+        .rpc()
+
+      setNotice({ msg: 'Server submited successfully', type: 'success' })
+      // getServerDetails(server.publicKey.toBase58())
+      if (publicKey) {
+        setListIsLoading(true)
+        getServerList(publicKey)
+      }
+    } catch (err) {
+      if (err instanceof AnchorError) {
+        setNotice({ msg: err.error.errorMessage, type: 'err' })
+      } else {
+        setNotice({ msg: `TransactionError: ${err}`, type: 'err' })
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const claimIncome = async (serverAddress: string) => {
+    try {
+      const program = getProgram()
+      const provider = program.provider as AnchorProvider
+
+      // Derive the PDA using the same seed
+      const [pdaPublicKey, bump] = await PublicKey.findProgramAddressSync(
+        [Buffer.from('payment')], // Ensure this matches the seed in your Rust program
+        program.programId
+      )
+
+      console.log(bump)
+
+      // Call the `createServer` instruction defined in the IDL
+      await program.methods
+        .claimIncome()
+        .accounts({
+          server: serverAddress,
+          user: provider.wallet.publicKey,
+          systemProgram: web3.SystemProgram.programId,
+          pdaAccount: pdaPublicKey
+        })
         .rpc()
 
       setNotice({ msg: 'Server submited successfully', type: 'success' })
@@ -311,8 +352,13 @@ export default function SubscribeCard() {
                                     {server.clientCount.toString()}
                                   </td>
                                   <td className="text-center">
-                                    <button className="btn btn-outline btn-xs btn-success ">
-                                      Claim reward
+                                    <button
+                                      onClick={() =>
+                                        claimIncome(server.publicKey)
+                                      }
+                                      className="btn btn-outline btn-xs btn-success "
+                                    >
+                                      Claim Income
                                     </button>
                                   </td>
                                 </tr>
