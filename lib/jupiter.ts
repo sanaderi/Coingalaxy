@@ -101,11 +101,14 @@ export const jupiterSwap = async (
       skipPreflight: true,
       maxRetries: 4
     })
-    await connection.confirmTransaction({
+    console.log(txid)
+    const confirmResult=await connection.confirmTransaction({
       blockhash: latestBlockHash.blockhash,
       lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
       signature: txid
     })
+
+    console.log(confirmResult)
 
     return 'success'
   } catch (error) {
