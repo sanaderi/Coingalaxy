@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/receiveSignal",
-      "schedule": "3-59/5 * * * *"
+      "schedule": "3-59/10 * * * *"
     }
   ]
 }
