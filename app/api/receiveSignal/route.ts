@@ -43,35 +43,35 @@ export async function POST(request: NextRequest) {
     const address: Array<number> | null = await kv.get('address')
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
-    let current_postion = await kv.get('current_position')
+    let current_position = await kv.get('current_position')
 
     let sourceToken = ''
     let destinationToken = ''
     let runSwap = false
     if (body.sender === 'fgh') {
-      if (body.type === 'sell' && current_postion !== 'sell') {
+      if (body.type === 'sell' && current_position !== 'sell') {
         //It can run alone sell command
         sourceToken = jupToken
         destinationToken = usdcToken
         runSwap = true
-        current_postion = 'sell'
+        current_position = 'sell'
         console.info('fgh signal sell')
       }
       await kv.set('fgh', body.type)
     } else if (body.sender === 'zigzag') {
-      if (body.type === 'buy' && fgh === 'buy' && current_postion !== 'buy') {
+      if (body.type === 'buy' && fgh === 'buy' && current_position !== 'buy') {
         //We have a HL and fgh in buy mode
         sourceToken = usdcToken
         destinationToken = jupToken
         runSwap = true
-        current_postion = 'buy'
+        current_position = 'buy'
         console.info('zigzag signal buy, fgh latest: buy')
-      } else if (body.type === 'sell' && current_postion !== 'sell') {
+      } else if (body.type === 'sell' && current_position !== 'sell') {
         //It can run alone sell command
         sourceToken = jupToken
         destinationToken = usdcToken
         runSwap = true
-        current_postion = 'sell'
+        current_position = 'sell'
         console.info('zigzag signal sell')
       }
       await kv.set('zigzag', body.type)
@@ -85,8 +85,8 @@ export async function POST(request: NextRequest) {
         destinationToken,
         address
       )
-      if (result_swap === 'success')
-        await kv.set('current_postion', current_postion)
+      if (result_swap == 'success')
+        await kv.set('current_position', current_position)
 
       return NextResponse.json({
         message: 'Swaped run',
@@ -135,28 +135,31 @@ export async function GET(request:NextRequest) {
     const address: Array<number> | null = await kv.get('address')
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
-    let current_postion = await kv.get('current_position')
+    let current_position = await kv.get('current_position')
+
+    
     
 
     let sourceToken = ''
     let destinationToken = ''
     let runSwap = false
-    if (fgh === 'buy' && zigzag == 'buy' && current_postion == 'sell') {
+    if (fgh === 'buy' && zigzag == 'buy' && current_position == 'sell') {
       sourceToken = usdcToken
       destinationToken = jupToken
       runSwap = true
-      current_postion = 'buy'
+      current_position = 'buy'
       console.info('buyy')
     } else if (
       (fgh === 'sell' || zigzag == 'sell') &&
-      current_postion == 'buy'
+      current_position == 'buy'
     ) {
       sourceToken = jupToken
       destinationToken = usdcToken
       runSwap = true
-      current_postion = 'sell'
+      current_position = 'sell'
       console.info('selll')
     }
+    console.log(current_position)
 
     if (!address) throw new Error(`Address incorrect`)
 
@@ -166,8 +169,12 @@ export async function GET(request:NextRequest) {
         destinationToken,
         address
       )
-      if (result_swap === 'success')
-        await kv.set('current_postion', current_postion)
+      if (result_swap == 'success') {
+        await kv.set('current_position', current_position)
+        console.log(await kv.get('current_position'))
+
+      }
+       
 
       return NextResponse.json({
         message: 'Swaped run',
@@ -175,7 +182,7 @@ export async function GET(request:NextRequest) {
       })
     } else {
       return NextResponse.json({
-        message: 'Condition incorrect'+current_postion
+        message: 'Condition incorrect'
       })
     }
   } catch (error) {
