@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/receiveSignal",
+      "schedule": "3-59/5 * * * *"
+    }
+  ]
+}

@@ -44,31 +44,53 @@ export async function POST(request: NextRequest) {
     const address: Array<number> | null = await kv.get('address')
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
+    let current_postion = await kv.get('current_position')
 
     let sourceToken = ''
     let destinationToken = ''
     let runSwap = false
     if (body.sender === 'fgh') {
-      if (body.type === 'sell') { //It can run alone sell command
+      if (body.type === 'sell' && current_postion !== 'sell') {
+        //It can run alone sell command
         sourceToken = jupToken
         destinationToken = usdcToken
         runSwap = true
+        current_postion = 'sell'
         console.info('fgh signal sell')
       }
       await kv.set('fgh', body.type)
     } else if (body.sender === 'zigzag') {
-      if (body.type === 'buy' && fgh === 'buy') { //We have a HL and fgh in buy mode
+      if (body.type === 'buy' && fgh === 'buy' && current_postion !== 'buy') {
+        //We have a HL and fgh in buy mode
         sourceToken = usdcToken
         destinationToken = jupToken
         runSwap = true
+        current_postion = 'buy'
         console.info('zigzag signal buy, fgh latest: buy')
-      } else if (body.type === 'sell') { //It can run alone sell command
+      } else if (body.type === 'sell' && current_postion !== 'sell') {
+        //It can run alone sell command
         sourceToken = jupToken
         destinationToken = usdcToken
         runSwap = true
+        current_postion = 'sell'
         console.info('zigzag signal sell')
       }
       await kv.set('zigzag', body.type)
+    } else if (fgh === 'buy' && zigzag == 'buy' && current_postion == 'sell') {
+      sourceToken = usdcToken
+      destinationToken = jupToken
+      runSwap = true
+      current_postion = 'buy'
+      console.info('buyy')
+    } else if (
+      (fgh === 'sell' || zigzag == 'sell') &&
+      current_postion == 'buy'
+    ) {
+      sourceToken = jupToken
+      destinationToken = usdcToken
+      runSwap = true
+      current_postion = 'sell'
+      console.info('selll')
     }
 
     if (!address) throw new Error(`Address incorrect`)
@@ -79,6 +101,8 @@ export async function POST(request: NextRequest) {
         destinationToken,
         address
       )
+      if (result_swap === 'success')
+        await kv.set('current_postion', current_postion)
 
       return NextResponse.json({
         message: 'Swaped run',

