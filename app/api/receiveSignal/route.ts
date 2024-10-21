@@ -44,6 +44,13 @@ export async function POST(request: NextRequest) {
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
     let current_position = await kv.get('current_position')
+    let swap_inprocess=await kv.get('swap_inprocess')
+    
+    if (swap_inprocess) {
+        console.log(swap_inprocess)
+        return NextResponse.json({msg:'Swap in progress'})
+    }
+    await kv.set('swap_inprocess',true)
 
     let sourceToken = ''
     let destinationToken = ''
@@ -99,6 +106,9 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     return NextResponse.json({ error: 'Failed to save data' }, { status: 500 })
+  }finally {
+       console.log('The Swap progress is over')
+       await kv.set('swap_inprocess',false) 
   }
 }
 
@@ -136,7 +146,13 @@ export async function GET(request:NextRequest) {
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
     let current_position = await kv.get('current_position')
-
+    let swap_inprocess=await kv.get('swap_inprocess')
+    
+    if (swap_inprocess) {
+        console.log(swap_inprocess)
+        return NextResponse.json({msg:'Swap in progress'})
+    }
+    await kv.set('swap_inprocess',true)
     
     
 
@@ -148,7 +164,7 @@ export async function GET(request:NextRequest) {
       destinationToken = jupToken
       runSwap = true
       current_position = 'buy'
-      console.info('buyy')
+      console.info(`retry to buyy`)
     } else if (
       (fgh === 'sell' || zigzag == 'sell') &&
       current_position == 'buy'
@@ -157,9 +173,9 @@ export async function GET(request:NextRequest) {
       destinationToken = usdcToken
       runSwap = true
       current_position = 'sell'
-      console.info('selll')
+      console.info('retry to selll')
     }
-    console.log(current_position)
+    console.log(`current_position: ${current_position}`)
 
     if (!address) throw new Error(`Address incorrect`)
 
@@ -171,7 +187,7 @@ export async function GET(request:NextRequest) {
       )
       if (result_swap == 'success') {
         await kv.set('current_position', current_position)
-        console.log(await kv.get('current_position'))
+        console.log(`successfuly position changed to ${current_position}`)
 
       }
        
@@ -187,6 +203,9 @@ export async function GET(request:NextRequest) {
     }
   } catch (error) {
     return NextResponse.json({ error: error }, { status: 500 })
+  } finally {
+       console.log('The Swap progress is over')
+       await kv.set('swap_inprocess',false) 
   }
 }
 
