@@ -17,7 +17,7 @@ export const fetchJupiterPrice = async (tokenSymbol: string) => {
 }
 
 import { getTokenBalance } from '@/utils/splTokenBalance'
-import { Connection, Keypair, VersionedTransaction,TransactionSignature, TransactionConfirmationStatus, SignatureStatus } from '@solana/web3.js'
+import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js'
 // Replace with your actual Keypair
 
 const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL
@@ -55,7 +55,7 @@ export const jupiterSwap = async (
 
     // Step 2: Make API call to Jupiter
     const quoteResponse = await (
-      await fetch(`https://quote-api.jup.ag/v6/quote?inputMint=${quoteRequest.inputMint}
+      await fetch(`https://api.jup.ag/swap/v6/quote?inputMint=${quoteRequest.inputMint}
 &outputMint=${quoteRequest.outputMint}
 &amount=${quoteRequest.amount}
 &slippageBps=${quoteRequest.slippageBps}`)
@@ -63,7 +63,7 @@ export const jupiterSwap = async (
 
     // Step 3: Get swap transaction from Jupiter
     const { swapTransaction } = await (
-      await fetch('https://quote-api.jup.ag/v6/swap', {
+      await fetch('https://api.jup.ag/swap/v6/transaction', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -133,45 +133,3 @@ export const jupiterSwap = async (
   }
 }
 
-
-const confirmTransaction = async (
-    connection: Connection,
-    signature: TransactionSignature,
-    desiredConfirmationStatus: TransactionConfirmationStatus = 'confirmed',
-    timeout: number = 30000,
-    pollInterval: number = 1000
-): Promise<SignatureStatus>=> {
-    const start = Date.now();
-
-    while (Date.now() - start < timeout) {
-        const { value: statuses } = await connection.getSignatureStatuses([signature]);
-
-        if (!statuses || statuses.length === 0) {
-            throw new Error('Failed to get signature status');
-        }
-
-        const status = statuses[0];
-
-        if (status === null) {
-            // If status is null, the transaction is not yet known
-            await new Promise(resolve => setTimeout(resolve, pollInterval));
-            continue;
-        }
-
-        if (status && status.err) {
-            throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`);
-        }
-
-        if (status && status.confirmationStatus && status.confirmationStatus === desiredConfirmationStatus) {
-            return status;
-        }
-
-        if (status &&  status.confirmationStatus === 'finalized') {
-            return status;
-        }
-
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
-    }
-
-    throw new Error(`Transaction confirmation timeout after ${timeout}ms`);
-}
