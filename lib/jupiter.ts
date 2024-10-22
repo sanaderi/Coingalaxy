@@ -110,10 +110,10 @@ export const jupiterSwap = async (
       signature: txid
     })
 
-    if (confirmResult.value && confirmResult.value.value.err) {
-      console.log(confirmResult.value.value.err)
-      return 'error'
-    }
+    // if (confirmResult && confirmResult.value && confirmResult.value?.value?.err) {
+      console.log(confirmResult.value)
+      // return 'error'
+    // }
 
     return 'success'
   } catch (error) {
