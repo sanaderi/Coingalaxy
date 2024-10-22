@@ -1,6 +1,12 @@
 'use client'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+const WalletButton = dynamic(
+  async () =>
+    (await import('@solana/wallet-adapter-react-ui')).WalletMultiButton,
+  { ssr: false }
+)
 
 export default function Menu() {
   return (
@@ -84,7 +90,7 @@ export default function Menu() {
           </ul>
         </div>
         <div>
-          <WalletMultiButton />
+          <WalletButton />
         </div>
       </div>
     </nav>

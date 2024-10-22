@@ -30,7 +30,7 @@ export const jupiterSwap = async (
   destinationToken: string,
   address: Array<number>
 ): Promise<string> => {
-  console.log('Enter to swap proccess')
+  console.log('Enter to swap')
   try {
     const secretKey = Uint8Array.from(address)
     const keypair = Keypair.fromSecretKey(secretKey)
@@ -79,7 +79,7 @@ export const jupiterSwap = async (
           dynamicSlippage: { maxBps: 300 },
           dynamicComputeUnitLimit: true, // allow dynamic compute limit instead of max 1,400,000
           // custom priority fee
-          prioritizationFeeLamports: 400000, // or custom lamports: 1000
+          prioritizationFeeLamports: 'auto', // or custom lamports: 1000
 
           // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
           // feeAccount: "fee_account_public_key"
@@ -110,7 +110,8 @@ export const jupiterSwap = async (
       signature: txid
     })
 
-    console.log(`Confirm result: ${confirmResult}`)
+    console.log(`Confirm result: ${confirmResult.value}`)
+    console.log(confirmResult)
 
     return 'success'
   } catch (error) {
