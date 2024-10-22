@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     let swap_inprocess=await kv.get('swap_inprocess')
     
     if (swap_inprocess) {
-        console.log(swap_inprocess)
+        console.log('Already a Swap in progress')
         return NextResponse.json({msg:'Swap in progress'})
     }
     await kv.set('swap_inprocess',true)
@@ -149,7 +149,7 @@ export async function GET(request:NextRequest) {
     let swap_inprocess = await kv.get('swap_inprocess')
    
     if (swap_inprocess) {
-        console.log(swap_inprocess)
+        console.log('Already a Swap in progress')
         return NextResponse.json({msg:'Swap in progress'})
     }
     await kv.set('swap_inprocess',true)

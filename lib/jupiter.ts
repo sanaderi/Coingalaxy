@@ -30,6 +30,7 @@ export const jupiterSwap = async (
   destinationToken: string,
   address: Array<number>
 ): Promise<string> => {
+  console.log('Enter to swap proccess')
   try {
     const secretKey = Uint8Array.from(address)
     const keypair = Keypair.fromSecretKey(secretKey)
