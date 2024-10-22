@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
         destinationToken,
         address
       )
-      if (result_swap == 'success')
+      if (result_swap == 'success' || result_swap=='insufficient_amount')
         await kv.set('current_position', current_position)
 
       return NextResponse.json({
@@ -146,8 +146,8 @@ export async function GET(request:NextRequest) {
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
     let current_position = await kv.get('current_position')
-    let swap_inprocess=await kv.get('swap_inprocess')
-    
+    let swap_inprocess = await kv.get('swap_inprocess')
+   
     if (swap_inprocess) {
         console.log(swap_inprocess)
         return NextResponse.json({msg:'Swap in progress'})
@@ -185,7 +185,7 @@ export async function GET(request:NextRequest) {
         destinationToken,
         address
       )
-      if (result_swap == 'success') {
+      if (result_swap == 'success' || result_swap=='insufficient_amount') {
         await kv.set('current_position', current_position)
         console.log(`successfuly position changed to ${current_position}`)
 

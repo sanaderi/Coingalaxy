@@ -17,7 +17,7 @@ export const fetchJupiterPrice = async (tokenSymbol: string) => {
 }
 
 import { getTokenBalance } from '@/utils/splTokenBalance'
-import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js'
+import { Connection, Keypair, VersionedTransaction,TransactionSignature, TransactionConfirmationStatus, SignatureStatus } from '@solana/web3.js'
 // Replace with your actual Keypair
 
 const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL
@@ -39,7 +39,9 @@ export const jupiterSwap = async (
       sourceToken
     )
 
-    if (amount < 1) return 'insufficient amount'
+    if (amount < 1) 
+      return 'insufficient_amount'
+    
 
     // Step 1: Create swap request with slippage tolerance
     const quoteRequest = {
@@ -76,7 +78,7 @@ export const jupiterSwap = async (
           dynamicSlippage: { maxBps: 300 },
           dynamicComputeUnitLimit: true, // allow dynamic compute limit instead of max 1,400,000
           // custom priority fee
-          prioritizationFeeLamports: 'auto' // or custom lamports: 1000
+          prioritizationFeeLamports: 'auto', // or custom lamports: 1000
 
           // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
           // feeAccount: "fee_account_public_key"
@@ -101,7 +103,6 @@ export const jupiterSwap = async (
       skipPreflight: true,
       maxRetries: 4
     })
-    console.log(`Transaction id: ${txid}`)
     const confirmResult=await connection.confirmTransaction({
       blockhash: latestBlockHash.blockhash,
       lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
@@ -130,4 +131,47 @@ export const jupiterSwap = async (
 
     return 'error'
   }
+}
+
+
+const confirmTransaction = async (
+    connection: Connection,
+    signature: TransactionSignature,
+    desiredConfirmationStatus: TransactionConfirmationStatus = 'confirmed',
+    timeout: number = 30000,
+    pollInterval: number = 1000
+): Promise<SignatureStatus>=> {
+    const start = Date.now();
+
+    while (Date.now() - start < timeout) {
+        const { value: statuses } = await connection.getSignatureStatuses([signature]);
+
+        if (!statuses || statuses.length === 0) {
+            throw new Error('Failed to get signature status');
+        }
+
+        const status = statuses[0];
+
+        if (status === null) {
+            // If status is null, the transaction is not yet known
+            await new Promise(resolve => setTimeout(resolve, pollInterval));
+            continue;
+        }
+
+        if (status && status.err) {
+            throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`);
+        }
+
+        if (status && status.confirmationStatus && status.confirmationStatus === desiredConfirmationStatus) {
+            return status;
+        }
+
+        if (status &&  status.confirmationStatus === 'finalized') {
+            return status;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+
+    throw new Error(`Transaction confirmation timeout after ${timeout}ms`);
 }
