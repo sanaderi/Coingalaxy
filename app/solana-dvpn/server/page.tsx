@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import ServerManage from '../../components/dvpn/SeverManage'
+import ServerManage from '../../components/dvpn/ServerManage'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {

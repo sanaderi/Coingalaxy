@@ -8,6 +8,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { AnchorProvider, AnchorError } from '@coral-xyz/anchor'
 import { ipSchema, portSchema } from '@/utils/validationSchemas'
+import dayjs from 'dayjs'
 interface UsrServers {
   owner: string
   ipAddress: string
@@ -15,6 +16,9 @@ interface UsrServers {
   connectionType: string
   publicKey: string
   clientCount: Number
+  lastClientExpiry: Number
+  startDate: Number
+  waitingFund: Number
 }
 export default function SubscribeCard() {
   const { connection } = useConnection()
@@ -185,6 +189,9 @@ export default function SubscribeCard() {
         portNum: plan.account.portNum,
         connectionType: plan.account.connectionType,
         clientCount: plan.account.clientCount,
+        lastClientExpiry: plan.account.lastClientExpiry,
+        startDate: plan.account.startDate,
+        waitingFund: plan.account.waitingFund,
         publicKey: plan.publicKey.toBase58()
       }))
 
@@ -219,6 +226,16 @@ export default function SubscribeCard() {
     } catch (error) {
       console.error('Failed to fetch server details:', error)
     }
+  }
+
+  const calcClaimable = (startDate: Number, endDate: Number, fund: Number) => {
+    const totalTime = Number(endDate) - Number(startDate)
+    const totalTimePast = Number(dayjs()) / 1000 - Number(startDate)
+
+    // let system_program: &Program<'_, System> = &ctx.accounts.system_program;
+    const fundLamports = (Number(totalTimePast) * Number(fund)) / totalTime
+    const claimable = fundLamports / 1000000000
+    return claimable.toFixed(10)
   }
 
   return (
@@ -334,6 +351,7 @@ export default function SubscribeCard() {
                                 <th className="text-left">Port</th>
                                 <th className="text-left">Type</th>
                                 <th className="text-center">Client count</th>
+                                <th className="text-center">Claimable</th>
                                 <th className="text-center">Action</th>
                               </tr>
                             </thead>
@@ -348,6 +366,13 @@ export default function SubscribeCard() {
                                   <td>{server.connectionType}</td>
                                   <td className="text-center">
                                     {server.clientCount.toString()}
+                                  </td>
+                                  <td className="text-center">
+                                    {calcClaimable(
+                                      server.startDate,
+                                      server.lastClientExpiry,
+                                      server.waitingFund
+                                    )}
                                   </td>
                                   <td className="text-center">
                                     <button
