@@ -42,8 +42,10 @@ export const jupiterSwap = async (
 
     if (amount < 1) return 'insufficient_amount'
     const priorityVal = await calcPriorty()
-    console.log('priority is: '+ priorityVal)
-   
+    console.log('priority is: ' + priorityVal)
+    if (priorityVal < 1)
+       return 'error'
+
     // Step 1: Create swap request with slippage tolerance
     const quoteRequest = {
       amount: Math.floor(amount) * 10 ** 6,
@@ -79,7 +81,7 @@ export const jupiterSwap = async (
           dynamicSlippage: { maxBps: 300 },
           // dynamicComputeUnitLimit: true, // allow dynamic compute limit instead of max 1,400,000
           // custom priority fee
-          prioritizationFeeLamports: priorityVal>1 ? priorityVal : 'auto' // or custom lamports: 1000
+          prioritizationFeeLamports: priorityVal > 1 ? priorityVal : 'auto' // or custom lamports: 1000
 
           // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
           // feeAccount: "fee_account_public_key"
@@ -110,10 +112,10 @@ export const jupiterSwap = async (
       signature: txid
     })
 
-    // if (confirmResult && confirmResult.value && confirmResult.value?.value?.err) {
-      console.log(confirmResult.value)
-      // return 'error'
-    // }
+
+    console.log(confirmResult.value.err)
+
+    if (confirmResult.value.err) return 'error'
 
     return 'success'
   } catch (error) {
@@ -138,38 +140,36 @@ export const jupiterSwap = async (
 }
 
 const calcPriorty = async () => {
-    let priorityValue=-1  
-    const myHeaders = new Headers()
-    myHeaders.append('Content-Type', 'application/json')
-    
+  let priorityValue = -1
+  const myHeaders = new Headers()
+  myHeaders.append('Content-Type', 'application/json')
 
-    const raw = JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'qn_estimatePriorityFees',
-      params: {
-        last_n_blocks: 100,
-        account: 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
-      }
-    })
-
-    const requestOptions:RequestInit = {
-      method: 'POST',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow'
+  const raw = JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'qn_estimatePriorityFees',
+    params: {
+      last_n_blocks: 100,
+      account: 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
     }
+  })
 
-    await fetch(rpcUrl,requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        const priorityFee = result.result.per_transaction.high // Accessing priorityFees
-        console.log(`calc fee is: ${priorityFee}`)
-        priorityValue=priorityFee
-      })
-      .catch((error) => {
-        priorityValue = -1
-      })
+  const requestOptions: RequestInit = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  }
+
+  await fetch(rpcUrl, requestOptions)
+    .then((response) => response.json())
+    .then((result) => {
+      const priorityFee = result.result.per_transaction.high // Accessing priorityFees
+      console.log(`calc fee is: ${priorityFee}`)
+      priorityValue = priorityFee
+    })
+    .catch((error) => {
+      priorityValue = -1
+    })
   return priorityValue
- 
 }

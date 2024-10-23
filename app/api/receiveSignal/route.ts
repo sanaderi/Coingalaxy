@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     if (body.sender === 'fgh') {
       if (
         body.type === 'sell'
-        // && current_position !== 'sell'
+        && current_position !== 'sell'
       ) {
         //It can run alone sell command
         sourceToken = jupToken
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       if (
         body.type === 'buy' &&
         fgh === 'buy'
-        // && current_position !== 'buy'
+        && current_position !== 'buy'
       ) {
         //We have a HL and fgh in buy mode
         sourceToken = usdcToken
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         console.info('zigzag signal buy, fgh latest: buy')
       } else if (
         body.type === 'sell'
-        // && current_position !== 'sell'
+        && current_position !== 'sell'
       ) {
         //It can run alone sell command
         sourceToken = jupToken
