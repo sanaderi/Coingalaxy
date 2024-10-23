@@ -67,7 +67,7 @@ export default function SubscribeCard() {
       setNotice({ msg: 'Error finding server', type: 'err' })
       setIsLoading(false)
       return
-    } else console.log(randomServer.toBase58())
+    }
 
     try {
       const program = getProgram()
@@ -185,9 +185,6 @@ export default function SubscribeCard() {
     try {
       // Fetch the Plan account details using its public key
       const planDetails = await program.account.plan.fetch(planPublicKey)
-
-      console.log('Plan Details:', planDetails)
-      console.log('Number:', planDetails.expirationDate.toNumber())
 
       return planDetails
     } catch (error) {

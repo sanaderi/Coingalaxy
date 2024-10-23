@@ -96,7 +96,7 @@
         },
         {
           "name": "server",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -163,14 +163,6 @@
             "type": "string"
           },
           {
-            "name": "claimable",
-            "type": "i64"
-          },
-          {
-            "name": "unclaimabe",
-            "type": "i64"
-          },
-          {
             "name": "clientCount",
             "type": "i64"
           },
@@ -203,6 +195,6 @@
     }
   ],
   "metadata": {
-    "address": "6FNyjxTRJHGEkjQ5BdiAQJMFjcwcaFJxJBf4vwimG3vk"
+    "address": "EQHMWmJRCK9uNSXgn2sSVf6Q6Ruq2nhJYf2MgxD9jTBW"
   }
 }

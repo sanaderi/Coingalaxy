@@ -134,17 +134,19 @@ export default function SubscribeCard() {
         })
         .rpc()
 
-      // setNotice({ msg: 'Server submited successfully', type: 'success' })
-      // getServerDetails(server.publicKey.toBase58())
+      setNotice({ msg: 'Claimed successfuly', type: 'success' })
       if (publicKey) {
         setListIsLoading(true)
         getServerList(publicKey)
       }
     } catch (err) {
       if (err instanceof AnchorError) {
-        // setNotice({ msg: err.error.errorMessage, type: 'err' })
+        console.log(err.error.errorMessage)
+        setNotice({ msg: err.error.errorMessage, type: 'err' })
       } else {
-        // setNotice({ msg: `TransactionError: ${err}`, type: 'err' })
+        console.log(err)
+
+        setNotice({ msg: `TransactionError: ${err}`, type: 'err' })
       }
     } finally {
       setIsLoading(false)
@@ -153,6 +155,10 @@ export default function SubscribeCard() {
 
   //Check server config
   const checkServerStatus = async () => {
+    setNotice({
+      msg: 'Checking your server config ...',
+      type: 'err'
+    })
     try {
       const response = await fetch(`/api/proxy`, {
         method: 'POST',
@@ -230,7 +236,8 @@ export default function SubscribeCard() {
 
   const calcClaimable = (startDate: Number, endDate: Number, fund: Number) => {
     const totalTime = Number(endDate) - Number(startDate)
-    const totalTimePast = Number(dayjs()) / 1000 - Number(startDate)
+    const currentTime = Number(dayjs()) / 1000
+    const totalTimePast = currentTime - Number(startDate)
 
     // let system_program: &Program<'_, System> = &ctx.accounts.system_program;
     const fundLamports = (Number(totalTimePast) * Number(fund)) / totalTime
