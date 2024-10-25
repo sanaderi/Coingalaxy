@@ -3,7 +3,10 @@ export const maxDuration = 300
 import { NextRequest, NextResponse } from 'next/server'
 import { jupiterSwap} from '@/lib/jupiter'
 import { kv } from '@vercel/kv'
-
+if (!process.env.SECRET_ADDRESS) {
+        throw new Error("SECRET_KEY environment variable not set");
+    }
+let secretKey = JSON.parse(process.env.SECRET_ADDRESS);
 export async function POST(request: NextRequest) {
   // Retrieve the inserted value (for verification)
   try {
@@ -40,7 +43,6 @@ export async function POST(request: NextRequest) {
     const usdcToken = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
     const jupToken = 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'
 
-    const address: Array<number> | null = await kv.get('address')
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
     let current_position = await kv.get('current_position')
@@ -94,13 +96,13 @@ export async function POST(request: NextRequest) {
       await kv.set('zigzag', body.type)
     }
 
-    if (!address) throw new Error(`Address incorrect`)
+    if (!secretKey) throw new Error(`Address incorrect`)
 
     if (runSwap) {
       const result_swap: string | undefined = await jupiterSwap(
         sourceToken,
         destinationToken,
-        address
+        secretKey
       )
       if (result_swap == 'success' || result_swap == 'insufficient_amount')
         await kv.set('current_position', current_position)
@@ -124,6 +126,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   // Retrieve the inserted value (for verification)
+   
   
 
   try {
@@ -153,7 +156,6 @@ export async function GET(request: NextRequest) {
     const usdcToken = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
     const jupToken = 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'
 
-    const address: Array<number> | null = await kv.get('address')
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
     let current_position = await kv.get('current_position')
@@ -186,13 +188,13 @@ export async function GET(request: NextRequest) {
     }
     console.log(`current_position: ${current_position}`)
 
-    if (!address) throw new Error(`Address incorrect`)
+    if (!secretKey) throw new Error(`Address incorrect`)
 
     if (runSwap) {
       const result_swap: string | undefined = await jupiterSwap(
         sourceToken,
         destinationToken,
-        address
+        secretKey
       )
       if (result_swap == 'success' || result_swap == 'insufficient_amount') {
         await kv.set('current_position', current_position)
