@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         console.log(`buy_price: ${body.price}`)
 
         const tp_price = (body.price / 100) * 3 + body.price
-        console.log(tp_price)
+        console.log(`tp_price: ${tp_price}`)
         await kv.set('tp_price', tp_price)
         console.info('zigzag signal buy, fgh latest: buy')
       } else if (body.type === 'sell' && current_position !== 'sell') {
@@ -123,7 +123,6 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-
   // Retrieve the inserted value (for verification)
   try {
     // Define the allowed IP addresses
@@ -177,6 +176,9 @@ export async function GET(request: NextRequest) {
       destinationToken = jupToken
       runSwap = true
       current_position = 'buy'
+      const tp_price = (jupPrice / 100) * 3 + jupPrice
+      console.log(`tp_price: ${tp_price}`)
+      await kv.set('tp_price', tp_price)
       console.info(`retry to buyy`)
     } else if (
       (fgh === 'sell' || zigzag == 'sell') &&
