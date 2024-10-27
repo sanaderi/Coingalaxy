@@ -1,12 +1,12 @@
 export const maxDuration = 300
 
 import { NextRequest, NextResponse } from 'next/server'
-import { jupiterSwap} from '@/lib/jupiter'
+import { jupiterSwap, fetchJupiterPrice } from '@/lib/jupiter'
 import { kv } from '@vercel/kv'
 if (!process.env.SECRET_ADDRESS) {
-        throw new Error("SECRET_KEY environment variable not set");
-    }
-let secretKey = JSON.parse(process.env.SECRET_ADDRESS);
+  throw new Error('SECRET_KEY environment variable not set')
+}
+let secretKey = JSON.parse(process.env.SECRET_ADDRESS)
 export async function POST(request: NextRequest) {
   // Retrieve the inserted value (for verification)
   try {
@@ -58,10 +58,7 @@ export async function POST(request: NextRequest) {
     let destinationToken = ''
     let runSwap = false
     if (body.sender === 'fgh') {
-      if (
-        body.type === 'sell'
-        && current_position !== 'sell'
-      ) {
+      if (body.type === 'sell' && current_position !== 'sell') {
         //It can run alone sell command
         sourceToken = jupToken
         destinationToken = usdcToken
@@ -71,21 +68,20 @@ export async function POST(request: NextRequest) {
       }
       await kv.set('fgh', body.type)
     } else if (body.sender === 'zigzag') {
-      if (
-        body.type === 'buy' &&
-        fgh === 'buy'
-        && current_position !== 'buy'
-      ) {
+      if (body.type === 'buy' && fgh === 'buy' && current_position !== 'buy') {
         //We have a HL and fgh in buy mode
         sourceToken = usdcToken
         destinationToken = jupToken
         runSwap = true
         current_position = 'buy'
+        await kv.set('buy_price', body.price)
+        console.log(`buy_price: ${body.price}`)
+
+        const tp_price = (body.price / 100) * 3 + body.price
+        console.log(tp_price)
+        await kv.set('tp_price', tp_price)
         console.info('zigzag signal buy, fgh latest: buy')
-      } else if (
-        body.type === 'sell'
-        && current_position !== 'sell'
-      ) {
+      } else if (body.type === 'sell' && current_position !== 'sell') {
         //It can run alone sell command
         sourceToken = jupToken
         destinationToken = usdcToken
@@ -156,7 +152,11 @@ export async function GET(request: NextRequest) {
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
     let current_position = await kv.get('current_position')
+    let tp_price = await kv.get('tp_price')
     let swap_inprocess = await kv.get('swap_inprocess')
+    const priceData = await fetchJupiterPrice('JUP')
+    const jupPrice = priceData.data.JUP.price
+    console.log(`current jup pirce: ${jupPrice}`)
 
     if (swap_inprocess) {
       console.log('Already a Swap in progress')
@@ -182,6 +182,13 @@ export async function GET(request: NextRequest) {
       runSwap = true
       current_position = 'sell'
       console.info('retry to selll')
+    } else if (Number(tp_price) >= jupPrice && current_position == 'buy') {
+      sourceToken = jupToken
+      destinationToken = usdcToken
+      runSwap = true
+      current_position = 'sell'
+      await kv.set('zigzag', 'sell') //Simulate a HH or HL and force the bot to wait next signal
+      console.info('retry to selll by tp method')
     }
     console.log(`current_position: ${current_position}`)
 
