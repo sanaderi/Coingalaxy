@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+
   // Retrieve the inserted value (for verification)
   try {
     // Define the allowed IP addresses
@@ -186,12 +187,13 @@ export async function GET(request: NextRequest) {
       runSwap = true
       current_position = 'sell'
       console.info('retry to selll')
-    } else if (Number(tp_price) >= jupPrice && current_position == 'buy') {
+    } else if (jupPrice>=Number(tp_price) && current_position == 'buy') {
       sourceToken = jupToken
       destinationToken = usdcToken
       runSwap = true
       current_position = 'sell'
       await kv.set('zigzag', 'sell') //Simulate a HH or HL and force the bot to wait next signal
+      console.info(`tp price: ${tp_price}`)
       console.info('retry to selll by tp method')
     }
     console.log(`current_position: ${current_position}`)
