@@ -68,6 +68,8 @@ export async function POST(request: NextRequest) {
       }
       await kv.set('fgh', body.type)
     } else if (body.sender === 'zigzag') {
+      if (body.type === 'buy')
+        kv.set('tmp_sl',body.price)
       if (body.type === 'buy' && fgh === 'buy' && current_position !== 'buy') {
         //We have a HL and fgh in buy mode
         sourceToken = usdcToken
@@ -153,10 +155,12 @@ export async function GET(request: NextRequest) {
     const fgh = await kv.get('fgh')
     let current_position = await kv.get('current_position')
     let tp_price = await kv.get('tp_price')
+    let tmp_sl = await kv.get('tmp_sl')
     let swap_inprocess = await kv.get('swap_inprocess')
     const priceData = await fetchJupiterPrice('JUP')
     const jupPrice = priceData.data.JUP.price
     console.log(`current jup pirce: ${jupPrice}`)
+    console.log(`current sl pirce: ${tmp_sl}`)
 
     if (swap_inprocess) {
       console.log('Already a Swap in progress')
