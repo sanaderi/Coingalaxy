@@ -65,12 +65,7 @@ export async function POST(request: NextRequest) {
         runSwap = true
         current_position = 'sell'
         console.info('fgh signal sell')
-      }
-      await kv.set('fgh', body.type)
-    } else if (body.sender === 'zigzag') {
-      if (body.type === 'buy')
-        kv.set('tmp_sl',body.price)
-      if (body.type === 'buy' && fgh === 'buy' && current_position !== 'buy') {
+      } else if (body.type === 'buy' && current_position !== 'buy') {
         //We have a HL and fgh in buy mode
         sourceToken = usdcToken
         destinationToken = jupToken
@@ -83,14 +78,32 @@ export async function POST(request: NextRequest) {
         console.log(`tp_price: ${tp_price}`)
         await kv.set('tp_price', tp_price)
         console.info('zigzag signal buy, fgh latest: buy')
-      } else if (body.type === 'sell' && current_position !== 'sell') {
-        //It can run alone sell command
-        sourceToken = jupToken
-        destinationToken = usdcToken
-        runSwap = true
-        current_position = 'sell'
-        console.info('zigzag signal sell')
       }
+      await kv.set('fgh', body.type)
+    } else if (body.sender === 'zigzag') {
+      // if (body.type === 'buy')
+      //   kv.set('tmp_sl',body.price)
+      // if (body.type === 'buy' && fgh === 'buy' && current_position !== 'buy') {
+      //   //We have a HL and fgh in buy mode
+      //   sourceToken = usdcToken
+      //   destinationToken = jupToken
+      //   runSwap = true
+      //   current_position = 'buy'
+      //   await kv.set('buy_price', body.price)
+      //   console.log(`buy_price: ${body.price}`)
+
+      //   const tp_price = Number((body.price / 100) * 3) + Number(body.price)
+      //   console.log(`tp_price: ${tp_price}`)
+      //   await kv.set('tp_price', tp_price)
+      //   console.info('zigzag signal buy, fgh latest: buy')
+      // } else if (body.type === 'sell' && current_position !== 'sell') {
+      //   //It can run alone sell command
+      //   sourceToken = jupToken
+      //   destinationToken = usdcToken
+      //   runSwap = true
+      //   current_position = 'sell'
+      //   console.info('zigzag signal sell')
+      // }
       await kv.set('zigzag', body.type)
     }
 
@@ -171,7 +184,7 @@ export async function GET(request: NextRequest) {
     let sourceToken = ''
     let destinationToken = ''
     let runSwap = false
-    if (fgh === 'buy' && zigzag == 'buy' && current_position == 'sell') {
+    if (fgh === 'buy' && current_position == 'sell') {
       sourceToken = usdcToken
       destinationToken = jupToken
       runSwap = true
@@ -180,16 +193,13 @@ export async function GET(request: NextRequest) {
       console.log(`tp_price: ${tp_price}`)
       await kv.set('tp_price', tp_price)
       console.info(`retry to buyy`)
-    } else if (
-      (fgh === 'sell' || zigzag == 'sell') &&
-      current_position == 'buy'
-    ) {
+    } else if (fgh === 'sell' && current_position == 'buy') {
       sourceToken = jupToken
       destinationToken = usdcToken
       runSwap = true
       current_position = 'sell'
       console.info('retry to selll')
-    } else if (jupPrice>=Number(tp_price) && current_position == 'buy') {
+    } else if (jupPrice >= Number(tp_price) && current_position == 'buy') {
       sourceToken = jupToken
       destinationToken = usdcToken
       runSwap = true
