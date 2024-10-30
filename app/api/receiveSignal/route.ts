@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
 
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
+    const rsi = await kv.get('rsi')
     let current_position = await kv.get('current_position')
     let swap_inprocess = await kv.get('swap_inprocess')
 
@@ -57,16 +58,16 @@ export async function POST(request: NextRequest) {
     let sourceToken = ''
     let destinationToken = ''
     let runSwap = false
-    if (body.sender === 'fgh') {
+    if (body.sender === 'rsi') {
       if (body.type === 'sell' && current_position !== 'sell') {
         //It can run alone sell command
         sourceToken = jupToken
         destinationToken = usdcToken
         runSwap = true
         current_position = 'sell'
-        console.info('fgh signal sell')
+        console.info('rsi signal sell')
       } else if (body.type === 'buy' && current_position !== 'buy') {
-        //We have a HL and fgh in buy mode
+        //We have a HL and rsi in buy mode
         sourceToken = usdcToken
         destinationToken = jupToken
         runSwap = true
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
         await kv.set('tp_price', tp_price)
         console.info('zigzag signal buy, fgh latest: buy')
       }
-      await kv.set('fgh', body.type)
+      await kv.set('rsi', body.type)
     } else if (body.sender === 'zigzag') {
       // if (body.type === 'buy')
       //   kv.set('tmp_sl',body.price)
@@ -136,6 +137,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+ 
   // Retrieve the inserted value (for verification)
   try {
     // Define the allowed IP addresses
@@ -166,6 +168,7 @@ export async function GET(request: NextRequest) {
 
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
+    const rsi = await kv.get('rsi')
     let current_position = await kv.get('current_position')
     let tp_price = await kv.get('tp_price')
     let tmp_sl = await kv.get('tmp_sl')
@@ -184,7 +187,7 @@ export async function GET(request: NextRequest) {
     let sourceToken = ''
     let destinationToken = ''
     let runSwap = false
-    if (fgh === 'buy' && current_position == 'sell') {
+    if (rsi === 'buy' && current_position == 'sell') {
       sourceToken = usdcToken
       destinationToken = jupToken
       runSwap = true
@@ -193,7 +196,7 @@ export async function GET(request: NextRequest) {
       console.log(`tp_price: ${tp_price}`)
       await kv.set('tp_price', tp_price)
       console.info(`retry to buyy`)
-    } else if (fgh === 'sell' && current_position == 'buy') {
+    } else if (rsi === 'sell' && current_position == 'buy') {
       sourceToken = jupToken
       destinationToken = usdcToken
       runSwap = true
