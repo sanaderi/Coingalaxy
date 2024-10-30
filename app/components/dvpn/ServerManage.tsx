@@ -124,7 +124,7 @@ export default function SubscribeCard() {
       )
 
       // Call the `createServer` instruction defined in the IDL
-      await program.methods
+      const transactionResult = await program.methods
         .claimIncome()
         .accounts({
           server: serverAddress,
@@ -133,6 +133,8 @@ export default function SubscribeCard() {
           pdaAccount: pdaPublicKey
         })
         .rpc()
+
+      console.log(transactionResult)
 
       setNotice({ msg: 'Claimed successfuly', type: 'success' })
       if (publicKey) {
