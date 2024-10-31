@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
       // }
       await kv.set('zigzag', body.type)
     }
+    
 
     if (!secretKey) throw new Error(`Address incorrect`)
 

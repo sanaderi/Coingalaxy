@@ -34,7 +34,6 @@ export default function SubscribeCard() {
   const [notice, setNotice] = useState({ msg: '', type: '' })
 
   const dialogRef = useRef(null)
-
   const handleSubmitServer = async () => {
     // Validate the IP address using Zod schema
     const ipValidationResult = ipSchema.safeParse(ipAddress)

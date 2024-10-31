@@ -1,7 +1,7 @@
 'use client'
 import { useRef } from 'react'
 
-export default function VoucherImg() {
+export default function GiftImg() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const svgRef = useRef<SVGSVGElement | null>(null)
 
@@ -24,7 +24,7 @@ export default function VoucherImg() {
           URL.revokeObjectURL(url)
 
           const link = document.createElement('a')
-          link.download = 'voucher.png'
+          link.download = 'gift.png'
           link.href = canvas.toDataURL()
           link.click()
         }
@@ -96,7 +96,7 @@ export default function VoucherImg() {
           fontFamily="Arial"
           textAnchor="middle"
         >
-          John Doe
+          Sadeq Naderi
         </text>
 
         {/* Additional Logo or Security Code */}
@@ -118,7 +118,7 @@ export default function VoucherImg() {
           fontWeight="bold"
           textAnchor="middle"
         >
-          Voucher
+          Gift
         </text>
       </svg>
 
