@@ -179,11 +179,14 @@ export async function GET(request: NextRequest) {
     const usdcToken = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
     const jupToken = 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'
 
-    const zigzag = await kv.get('zigzag')
-    const fgh = await kv.get('fgh')
+    // const fgh = await kv.get('fgh')
+    console.log('Get rsi')
     const rsi = await kv.get('rsi')
+    console.log('Get position')
     let current_position = await kv.get('current_position')
+    console.log('Get tp')
     let tp_price = await kv.get('tp_price')
+    console.log('Get swap status')
     let swap_inprocess = await kv.get('swap_inprocess')
     console.log(`Start receive jup price`)
     const priceData = await fetchJupiterPrice('JUP')
