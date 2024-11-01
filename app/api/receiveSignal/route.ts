@@ -184,12 +184,13 @@ export async function GET(request: NextRequest) {
     const rsi = await kv.get('rsi')
     let current_position = await kv.get('current_position')
     let tp_price = await kv.get('tp_price')
-    let tmp_sl = await kv.get('tmp_sl')
     let swap_inprocess = await kv.get('swap_inprocess')
+    console.log(`Start receive jup price`)
     const priceData = await fetchJupiterPrice('JUP')
+    console.log(`Jup price received`)
+
     const jupPrice = priceData.data.JUP.price
     console.log(`current jup pirce: ${jupPrice}`)
-    console.log(`current sl pirce: ${tmp_sl}`)
 
     if (swap_inprocess) {
       console.log('Already a Swap in progress')
