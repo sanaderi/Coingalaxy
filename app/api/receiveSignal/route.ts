@@ -75,15 +75,20 @@ export async function POST(request: NextRequest) {
         await kv.set('buy_price', body.price)
         console.log(`buy_price: ${body.price}`)
 
-        const tp_price = Number((body.price / 100) * 3) + Number(body.price)
+
+        const tp_price = Number((body.price / 100) * 4) + Number(body.price)
         console.log(`tp_price: ${tp_price}`)
         await kv.set('tp_price', tp_price)
-        console.info('zigzag signal buy, fgh latest: buy')
+        
+        const sl_price = Number(body.price) - Number(body.price / 100) 
+        console.log(`sl_price: ${sl_price}`)
+        kv.set('sl_price',sl_price)
+
+        console.info('RSI buy')
       }
       await kv.set('rsi', body.type)
     } else if (body.sender === 'zigzag') {
       // if (body.type === 'buy')
-      //   kv.set('tmp_sl',body.price)
       // if (body.type === 'buy' && fgh === 'buy' && current_position !== 'buy') {
       //   //We have a HL and fgh in buy mode
       //   sourceToken = usdcToken
@@ -193,9 +198,12 @@ export async function GET(request: NextRequest) {
       destinationToken = jupToken
       runSwap = true
       current_position = 'buy'
-      const tp_price = (jupPrice / 100) * 3 + jupPrice
+      const tp_price = (jupPrice / 100) * 4 + jupPrice
       console.log(`tp_price: ${tp_price}`)
       await kv.set('tp_price', tp_price)
+      const sl_price = jupPrice - Number(jupPrice / 100) 
+      console.log(`sl_price: ${sl_price}`)
+      kv.set('sl_price',sl_price)
       console.info(`retry to buyy`)
     } else if (rsi === 'sell' && current_position == 'buy') {
       sourceToken = jupToken
