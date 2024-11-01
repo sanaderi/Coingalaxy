@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const usdcToken = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
     const jupToken = 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'
 
-    const zigzag = await kv.get('zigzag')
+    // const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
     const rsi = await kv.get('rsi')
     const rsi_crossing = await kv.get('rsi_crossing')
@@ -66,14 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (body.sender === 'rsi') {
-      if (body.type === 'sell' && current_position !== 'sell') {
-        //It can run alone sell command
-        sourceToken = jupToken
-        destinationToken = usdcToken
-        runSwap = true
-        current_position = 'sell'
-        console.info('rsi signal sell')
-      } else if (body.type === 'buy' && current_position !== 'buy') {
+      if (body.type === 'buy' && current_position !== 'buy') {
         //We have a HL and rsi in buy mode
         sourceToken = usdcToken
         destinationToken = jupToken
@@ -94,7 +87,19 @@ export async function POST(request: NextRequest) {
         console.info('RSI buy')
       }
       await kv.set('rsi', body.type)
-    } else if (body.sender === 'zigzag') {
+      await kv.set('fgh', 'buy')
+    } else if (body.sender === 'fgh') {
+      if (body.type === 'sell' && current_position !== 'sell') {
+        //It can run alone sell command
+        sourceToken = jupToken
+        destinationToken = usdcToken
+        runSwap = true
+        current_position = 'sell'
+        console.info('fgh signal sell')
+      } 
+      await kv.set('fgh', body.type)
+    }
+    else if (body.sender === 'zigzag') {
       // if (body.type === 'buy')
       // if (body.type === 'buy' && fgh === 'buy' && current_position !== 'buy') {
       //   //We have a HL and fgh in buy mode
@@ -180,6 +185,8 @@ export async function GET(request: NextRequest) {
     const jupToken = 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'
 
     // const fgh = await kv.get('fgh')
+    console.log('Get fgh')
+    const fgh = await kv.get('fgh')
     console.log('Get rsi')
     const rsi = await kv.get('rsi')
     console.log('Get position')
@@ -216,7 +223,7 @@ export async function GET(request: NextRequest) {
       console.log(`sl_price: ${sl_price}`)
       kv.set('sl_price',sl_price)
       console.info(`retry to buyy`)
-    } else if (rsi === 'sell' && current_position == 'buy') {
+    } else if (fgh === 'sell' && current_position == 'buy') {
       sourceToken = jupToken
       destinationToken = usdcToken
       runSwap = true
