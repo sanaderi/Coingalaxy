@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
     const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
     const rsi = await kv.get('rsi')
+    const rsi_crossing = await kv.get('rsi_crossing')
     let current_position = await kv.get('current_position')
     let swap_inprocess = await kv.get('swap_inprocess')
 
@@ -58,6 +59,12 @@ export async function POST(request: NextRequest) {
     let sourceToken = ''
     let destinationToken = ''
     let runSwap = false
+     
+    if (body.sender === 'rsi_crossing') {
+      kv.set('rsi_crossing', true)
+      console.log('Rsi crossing 70')
+    }
+
     if (body.sender === 'rsi') {
       if (body.type === 'sell' && current_position !== 'sell') {
         //It can run alone sell command
