@@ -229,15 +229,16 @@ export async function GET(request: NextRequest) {
       runSwap = true
       current_position = 'sell'
       console.info('retry to selll')
-    } else if (jupPrice >= Number(tp_price) && current_position == 'buy') {
-      sourceToken = jupToken
-      destinationToken = usdcToken
-      runSwap = true
-      current_position = 'sell'
-      await kv.set('zigzag', 'sell') //Simulate a HH or HL and force the bot to wait next signal
-      console.info(`tp price: ${tp_price}`)
-      console.info('retry to selll by tp method')
     }
+    // else if (jupPrice >= Number(tp_price) && current_position == 'buy') {
+    //   sourceToken = jupToken
+    //   destinationToken = usdcToken
+    //   runSwap = true
+    //   current_position = 'sell'
+    //   await kv.set('zigzag', 'sell') //Simulate a HH or HL and force the bot to wait next signal
+    //   console.info(`tp price: ${tp_price}`)
+    //   console.info('retry to selll by tp method')
+    // }
     console.log(`current_position: ${current_position}`)
 
     if (!secretKey) throw new Error(`Address incorrect`)
