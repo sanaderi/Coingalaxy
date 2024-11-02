@@ -79,9 +79,9 @@ export const jupiterSwap = async (
           // auto wrap and unwrap SOL. default is true
           // wrapAndUnwrapSol: true,
           dynamicSlippage: { maxBps: 300 },
-          // dynamicComputeUnitLimit: true, // allow dynamic compute limit instead of max 1,400,000
+          dynamicComputeUnitLimit: true, // allow dynamic compute limit instead of max 1,400,000
           // custom priority fee
-          prioritizationFeeLamports: priorityVal > 1 ? priorityVal : 'auto' // or custom lamports: 1000
+          prioritizationFeeLamports: 'auto' // or custom lamports: 1000
 
           // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
           // feeAccount: "fee_account_public_key"
