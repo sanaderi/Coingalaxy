@@ -59,13 +59,13 @@ export async function POST(request: NextRequest) {
     let sourceToken = ''
     let destinationToken = ''
     let runSwap = false
-     
+
     if (body.sender === 'rsi_crossing') {
       kv.set('rsi_crossing', true)
       console.log('Rsi crossing 70')
     }
 
-    if (body.sender === 'rsi') {
+    if (body.sender === 'fgh') {
       if (body.type === 'buy' && current_position !== 'buy') {
         //We have a HL and rsi in buy mode
         sourceToken = usdcToken
@@ -75,31 +75,25 @@ export async function POST(request: NextRequest) {
         await kv.set('buy_price', body.price)
         console.log(`buy_price: ${body.price}`)
 
-
         const tp_price = Number((body.price / 100) * 4) + Number(body.price)
         console.log(`tp_price: ${tp_price}`)
         await kv.set('tp_price', tp_price)
-        
-        const sl_price = Number(body.price) - Number(body.price / 100) 
+
+        const sl_price = Number(body.price) - Number(body.price / 100)
         console.log(`sl_price: ${sl_price}`)
-        kv.set('sl_price',sl_price)
+        kv.set('sl_price', sl_price)
 
         console.info('RSI buy')
-      }
-      await kv.set('rsi', body.type)
-      await kv.set('fgh', 'buy')
-    } else if (body.sender === 'fgh') {
-      if (body.type === 'sell' && current_position !== 'sell') {
+      } else if (body.type === 'sell' && current_position !== 'sell') {
         //It can run alone sell command
         sourceToken = jupToken
         destinationToken = usdcToken
         runSwap = true
         current_position = 'sell'
         console.info('fgh signal sell')
-      } 
+      }
       await kv.set('fgh', body.type)
     }
-    
 
     if (!secretKey) throw new Error(`Address incorrect`)
 
@@ -130,7 +124,6 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
- 
   // Retrieve the inserted value (for verification)
   try {
     // Define the allowed IP addresses
@@ -191,7 +184,7 @@ export async function GET(request: NextRequest) {
     let sourceToken = ''
     let destinationToken = ''
     let runSwap = false
-    if (rsi === 'buy' && current_position == 'sell') {
+    if (fgh === 'buy' && current_position == 'sell') {
       sourceToken = usdcToken
       destinationToken = jupToken
       runSwap = true
@@ -199,9 +192,9 @@ export async function GET(request: NextRequest) {
       const tp_price = (jupPrice / 100) * 4 + jupPrice
       console.log(`tp_price: ${tp_price}`)
       await kv.set('tp_price', tp_price)
-      const sl_price = jupPrice - Number(jupPrice / 100) 
+      const sl_price = jupPrice - Number(jupPrice / 100)
       console.log(`sl_price: ${sl_price}`)
-      kv.set('sl_price',sl_price)
+      kv.set('sl_price', sl_price)
       console.info(`retry to buyy`)
     } else if (fgh === 'sell' && current_position == 'buy') {
       sourceToken = jupToken
