@@ -45,8 +45,9 @@ export async function POST(request: NextRequest) {
 
     // const zigzag = await kv.get('zigzag')
     const fgh = await kv.get('fgh')
-    const rsi = await kv.get('rsi')
+    // const rsi = await kv.get('rsi')
     const rsi_crossing = await kv.get('rsi_crossing')
+    console.log('rsi crossing'+rsi_crossing)
     let current_position = await kv.get('current_position')
     let swap_inprocess = await kv.get('swap_inprocess')
 
@@ -172,8 +173,8 @@ export async function GET(request: NextRequest) {
     const priceData = await fetchJupiterPrice('JUP')
     console.log(`Jup price received`)
 
-    const jupPrice = priceData.data.JUP.price
-    console.log(`current jup pirce: ${jupPrice}`)
+    // const jupPrice = priceData.data.JUP.price
+    // console.log(`current jup pirce: ${jupPrice}`)
 
     if (swap_inprocess) {
       console.log('Already a Swap in progress')
@@ -189,12 +190,12 @@ export async function GET(request: NextRequest) {
       destinationToken = jupToken
       runSwap = true
       current_position = 'buy'
-      const tp_price = (jupPrice / 100) * 4 + jupPrice
-      console.log(`tp_price: ${tp_price}`)
-      await kv.set('tp_price', tp_price)
-      const sl_price = jupPrice - Number(jupPrice / 100)
-      console.log(`sl_price: ${sl_price}`)
-      kv.set('sl_price', sl_price)
+      // const tp_price = (jupPrice / 100) * 4 + jupPrice
+      // console.log(`tp_price: ${tp_price}`)
+      // await kv.set('tp_price', tp_price)
+      // const sl_price = jupPrice - Number(jupPrice / 100)
+      // console.log(`sl_price: ${sl_price}`)
+      // kv.set('sl_price', sl_price)
       console.info(`retry to buyy`)
     } else if (fgh === 'sell' && current_position == 'buy') {
       sourceToken = jupToken
