@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
       const diff = balanceInSol - previousBalance
       const absDiff = Math.abs(diff)
 
-      if (absDiff > 50) {
+      if (absDiff > 55) {
         const direction = diff > 0 ? 'increased' : 'decreased'
         significantChanges.push(
           `Wallet ${address} ${direction} by ${absDiff.toFixed(2)} SOL\nPrevious: ${previousBalance.toFixed(2)} SOL\nCurrent: ${balanceInSol.toFixed(2)} SOL\n`
