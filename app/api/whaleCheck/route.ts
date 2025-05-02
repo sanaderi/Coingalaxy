@@ -83,8 +83,12 @@ async function getPreviousBalances() {
   return {}
 }
 
+// Define the type for balances
+interface Balances {
+  [walletAddress: string]: number;
+}
 async function saveBalance(walletAddress: string, balance: number) {
-  let balances = {}
+  let balances: Balances = {}; // Define the type for balances
 
   if (fs.existsSync(balanceFilePath)) {
     const data = fs.readFileSync(balanceFilePath, 'utf-8')
