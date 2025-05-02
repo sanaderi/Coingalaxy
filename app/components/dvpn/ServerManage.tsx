@@ -190,19 +190,19 @@ export default function SubscribeCard() {
         }
       ])
 
-      const serversArray = servers.map((plan) => ({
-        owner: plan.account.owner.toBase58(), // Convert the owner publicKey to base58
-        ipAddress: plan.account.ipAddress,
-        portNum: plan.account.portNum,
-        connectionType: plan.account.connectionType,
-        clientCount: plan.account.clientCount,
-        lastClientExpiry: plan.account.lastClientExpiry,
-        startDate: plan.account.startDate,
-        waitingFund: plan.account.waitingFund,
-        publicKey: plan.publicKey.toBase58()
-      }))
+      // const serversArray = servers.map((plan) => ({
+      //   owner: plan.account.owner.toBase58(), // Convert the owner publicKey to base58
+      //   ipAddress: plan.account.ipAddress,
+      //   portNum: plan.account.portNum,
+      //   connectionType: plan.account.connectionType,
+      //   clientCount: plan.account.clientCount,
+      //   lastClientExpiry: plan.account.lastClientExpiry,
+      //   startDate: plan.account.startDate,
+      //   waitingFund: plan.account.waitingFund,
+      //   publicKey: plan.publicKey.toBase58()
+      // }))
 
-      setActiveServers(serversArray)
+      // setActiveServers(serversArray)
     } catch (error) {
       console.error('Failed to fetch servers for user:', error)
     } finally {

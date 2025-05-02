@@ -45,11 +45,11 @@ export default function SubscribeCard() {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const openConfig = async (serverKey: string) => {
     const serverDetails = await getServerDetails(serverKey)
-    if (serverDetails)
-      setServerDetails({
-        ip_address: serverDetails.ipAddress,
-        connection_type: serverDetails.connectionType
-      })
+    // if (serverDetails)
+    //   setServerDetails({
+    //     ip_address: serverDetails.ipAddress,
+    //     connection_type: serverDetails.connectionType
+    //   })
     dialogRef.current?.showModal()
   }
 
@@ -156,15 +156,15 @@ export default function SubscribeCard() {
         }
       ])
 
-      const plansArray = plans.map((plan) => ({
-        owner: plan.account.owner.toBase58(), // Convert the owner publicKey to base58
-        expirationDate: plan.account.expirationDate.toNumber(), // Convert i64 to JavaScript number
-        publicKey: plan.publicKey.toBase58(),
-        server: plan.account.server.toBase58(),
-        username: plan.account.username
-      }))
+      // const plansArray = plans.map((plan) => ({
+      //   owner: plan.account.owner.toBase58(), // Convert the owner publicKey to base58
+      //   expirationDate: plan.account.expirationDate.toNumber(), // Convert i64 to JavaScript number
+      //   publicKey: plan.publicKey.toBase58(),
+      //   server: plan.account.server.toBase58(),
+      //   username: plan.account.username
+      // }))
 
-      setUserPlans(plansArray)
+      // setUserPlans(plansArray)
     } catch (error) {
       console.error('Failed to fetch plans for user:', error)
     } finally {
