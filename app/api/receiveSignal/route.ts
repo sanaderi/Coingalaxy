@@ -1,3 +1,5 @@
+//use this when need//"path": "/api/receiveSignal","schedule": "3-59/10 * * * *"
+
 export const maxDuration = 300
 
 import { NextRequest, NextResponse } from 'next/server'
