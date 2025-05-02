@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/checkWallet",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
