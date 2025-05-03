@@ -5,9 +5,8 @@ on:
     branches: [main]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment: Production
 
     steps:
       - name: Checkout code
@@ -37,6 +36,40 @@ jobs:
 
       - name: Build the app
         run: npm run build
+
+      - name: List build files
+        run: |
+          echo "Listing build files:"
+          ls -alh .next
+          ls -alh public
+          ls -alh package.json
+          ls -alh package-lock.json
+          ls -alh next.config.js
+
+      - name: Check build output
+        run: |
+          echo "Checking build output in .next directory:"
+          ls -alh .next
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: Production
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: nextjs-build
+
+      - name: Verify files before upload
+        run: |
+          echo "Verifying files before upload"
+          ls -alh .next
+          ls -alh public
+          ls -alh package.json
+          ls -alh package-lock.json
+          ls -alh next.config.js
 
       - name: Upload build to VPS
         uses: appleboy/scp-action@v0.1.6
