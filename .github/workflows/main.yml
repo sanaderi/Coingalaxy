@@ -5,8 +5,9 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    environment: Production
 
     steps:
       - name: Checkout code
@@ -37,34 +38,9 @@ jobs:
       - name: Build the app
         run: npm run build
 
-      - name: List build files
+      - name: Verify build files
         run: |
-          echo "Listing build files:"
-          ls -alh .next
-          ls -alh public
-          ls -alh package.json
-          ls -alh package-lock.json
-          ls -alh next.config.mjs
-
-      - name: Check build output
-        run: |
-          echo "Checking build output in .next directory:"
-          ls -alh .next
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: Production
-
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: nextjs-build
-
-      - name: Verify files before upload
-        run: |
-          echo "Verifying files before upload"
+          echo "Verifying build files"
           ls -alh .next
           ls -alh public
           ls -alh package.json
