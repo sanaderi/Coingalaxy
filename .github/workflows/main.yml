@@ -56,7 +56,8 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
-          password: ${{ secrets.VPS_PASS }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.VPS_PASS }}
           port: ${{ secrets.VPS_PORT }}
           source: |
             .next
@@ -71,7 +72,8 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
-          password: ${{ secrets.VPS_PASS }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.VPS_PASS }}
           port: ${{ secrets.VPS_PORT }}
           script: |
             cd /home/coingalaxy/front
