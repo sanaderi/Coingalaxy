@@ -55,7 +55,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           port: ${{ secrets.VPS_PORT }}
-          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          password: ${{ secrets.VPS_PASS }}
           source: |
             .next
             public
@@ -70,7 +70,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           port: ${{ secrets.VPS_PORT }}
-          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          password: ${{ secrets.VPS_PASS }}
           script: |
             cd /home/coingalaxy/front
             npm install --omit=dev
