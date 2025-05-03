@@ -23,6 +23,10 @@ jobs:
       - name: Build the app
         run: npm run build
 
+      - name: Set environment variable for Resend API key
+        run: echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> $GITHUB_ENV
+
+
       - name: Upload build to VPS
         uses: appleboy/scp-action@v0.1.6
         with:
