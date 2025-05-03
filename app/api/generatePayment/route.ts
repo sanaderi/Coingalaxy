@@ -1,4 +1,4 @@
-// import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 // import clientPromise from '../../../lib/mongodb'
 
 // /**
@@ -32,7 +32,7 @@
 //  *         description: Bad Request - Invalid input
 //  */
 
-// export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest) {
 //   try {
 //     // Parse the incoming request body as JSON
 //     const body = await request.json()
@@ -57,6 +57,6 @@
 //       payment_link: paymentLink
 //     })
 //   } catch (error) {
-//     return NextResponse.json({ error: 'Failed to save data' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to save data' }, { status: 500 })
 //   }
-// }
+}

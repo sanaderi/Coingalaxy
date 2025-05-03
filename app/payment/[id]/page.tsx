@@ -12,7 +12,7 @@
 //   description: 'Solana payment gateway'
 // }
 
-// export default async function Payment({ params }: { params: { id: string } }) {
+export default async function Payment({ params }: { params: { id: string } }) {
 //   const pageId = params.id
 
 //   // Validate id
@@ -82,9 +82,10 @@
 //   }
 //   const decryptedObject: DecryptedData = JSON.parse(decryptedString)
 
-//   return (
-//     <div>
-//       <PaymentCard data={decryptedObject} />
-//     </div>
-//   )
-// }
+  return (
+    <div>
+        Hellp
+      {/* <PaymentCard data={decryptedObject} /> */}
+    </div>
+  )
+}

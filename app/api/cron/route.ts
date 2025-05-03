@@ -1,8 +1,8 @@
 // import { fetchJupiterPrice } from '@/lib/jupiter'
 // import clientPromise from '@/lib/mongodb'
-// import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
-// export async function GET() {
+export async function GET() {
 //   try {
 //     // Fetch current JUP price
 //     const data = await fetchJupiterPrice('JUP')
@@ -96,6 +96,6 @@
 //     })
 //   } catch (error) {
 //     console.error(error)
-//     return NextResponse.json({ status: 0, message: 'error' })
+    return NextResponse.json({ status: 0, message: 'error' })
 //   }
-// }
+}
