@@ -44,7 +44,7 @@ jobs:
           ls -alh public
           ls -alh package.json
           ls -alh package-lock.json
-          ls -alh next.config.js
+          ls -alh next.config.mjs
 
       - name: Check build output
         run: |
@@ -69,7 +69,7 @@ jobs:
           ls -alh public
           ls -alh package.json
           ls -alh package-lock.json
-          ls -alh next.config.js
+          ls -alh next.config.mjs
 
       - name: Upload build to VPS
         uses: appleboy/scp-action@v0.1.6
@@ -83,7 +83,7 @@ jobs:
             public
             package.json
             package-lock.json
-            next.config.js
+            next.config.mjs
           target: /home/coingalaxy/front
 
       - name: SSH and restart app
