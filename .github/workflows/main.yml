@@ -23,21 +23,20 @@ jobs:
       - name: Build the app
         run: npm run build
 
-      - name: Upload build via rsync
-        uses: burnett01/rsync-deployments@v2.0.0
+      - name: Upload build to VPS
+        uses: appleboy/scp-action@v0.1.6
         with:
-          switches: -avzr --delete
-          path: |
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          port: ${{ secrets.VPS_PORT }}
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          source: |
             .next
             public
             package.json
             package-lock.json
             next.config.js
-          remote_path: /home/coingalaxy/front
-          remote_host: ${{ secrets.VPS_HOST }}
-          remote_user: ${{ secrets.VPS_USERNAME }}
-          remote_key: ${{ secrets.VPS_PRIVATE_KEY }}
-          remote_port: ${{ secrets.VPS_PORT }}
+          target: /home/coingalaxy/front
 
       - name: SSH and restart app
         uses: appleboy/ssh-action@v1.0.0
@@ -49,5 +48,5 @@ jobs:
           script: |
             cd /home/coingalaxy/front
             npm ci --omit=dev
-            pm2 restart ath || pm2 start npm --name "nextjs" -- start
+            pm2 restart nextjs || pm2 start npm --name "nextjs" -- start
             pm2 save
