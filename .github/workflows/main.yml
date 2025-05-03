@@ -1,0 +1,78 @@
+name: Deploy Next.js to VPS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Set environment variables manually
+      - name: Set environment variable for NEXT_PUBLIC_RPC_URL
+        run: echo "NEXT_PUBLIC_RPC_URL=${{ secrets.NEXT_PUBLIC_RPC_URL }}" >> $GITHUB_ENV
+      - name: Set environment variable for NEXT_PUBLIC_RPC_URL_DEV
+        run: echo "NEXT_PUBLIC_RPC_URL_DEV=${{ secrets.NEXT_PUBLIC_RPC_URL_DEV }}" >> $GITHUB_ENV
+      - name: Set environment variable for NEXT_PUBLIC_SOLANA_NETWORK
+        run: echo "NEXT_PUBLIC_SOLANA_NETWORK=${{ secrets.NEXT_PUBLIC_SOLANA_NETWORK }}" >> $GITHUB_ENV
+      - name: Set environment variable for MONGODB_URI
+        run: echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> $GITHUB_ENV
+      - name: Set environment variable for Resend API key
+        run: echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> $GITHUB_ENV
+      - name: Set environment variable for WEBSITE_URL
+        run: echo "WEBSITE_URL=${{ secrets.WEBSITE_URL }}" >> $GITHUB_ENV
+      - name: Set environment variable for SECRET_ADDRESS
+        run: echo "SECRET_ADDRESS=${{ secrets.SECRET_ADDRESS }}" >> $GITHUB_ENV
+      - name: Set environment variable for KV_URL
+        run: echo "KV_URL=${{ secrets.KV_URL }}" >> $GITHUB_ENV
+      - name: Set environment variable for KV_REST_API_URL
+        run: echo "KV_REST_API_URL=${{ secrets.KV_REST_API_URL }}" >> $GITHUB_ENV
+      - name: Set environment variable for KV_REST_API_TOKEN
+        run: echo "KV_REST_API_TOKEN=${{ secrets.KV_REST_API_TOKEN }}" >> $GITHUB_ENV
+      - name: Set environment variable for KV_REST_API_READ_ONLY_TOKEN
+        run: echo "KV_REST_API_READ_ONLY_TOKEN=${{ secrets.KV_REST_API_READ_ONLY_TOKEN }}" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the app
+        run: npm run build
+
+
+
+      - name: Upload build to VPS
+        uses: appleboy/scp-action@v0.1.6
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          port: ${{ secrets.VPS_PORT }}
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          source: |
+            .next
+            public
+            package.json
+            package-lock.json
+            next.config.js
+          target: /home/coingalaxy/front
+
+      - name: SSH and restart app
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          port: ${{ secrets.VPS_PORT }}
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          script: |
+            cd /home/coingalaxy/front
+            npm install --omit=dev
+            pm2 restart nextjs || pm2 start npm --name "nextjs" -- start
+            pm2 save
