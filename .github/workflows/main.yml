@@ -38,23 +38,6 @@ jobs:
       - name: Build the app
         run: npm run build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: nextjs-build
-          path: |
-            .next
-            public
-            package.json
-            package-lock.json
-            next.config.js
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: nextjs-build
-          path: ./downloaded-artifacts
-
       - name: Upload build to VPS
         uses: appleboy/scp-action@v0.1.6
         with:
@@ -63,11 +46,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.VPS_PORT }}
           source: |
-            ./downloaded-artifacts/.next
-            ./downloaded-artifacts/public
-            ./downloaded-artifacts/package.json
-            ./downloaded-artifacts/package-lock.json
-            ./downloaded-artifacts/next.config.js
+            .next
+            public
+            package.json
+            package-lock.json
+            next.config.js
           target: /home/coingalaxy/front
 
       - name: SSH and restart app
