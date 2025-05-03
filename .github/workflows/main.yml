@@ -23,6 +23,14 @@ jobs:
       - name: Build the app
         run: npm run build
 
+      - name: Set environment variable for NEXT_PUBLIC_RPC_URL
+        run: echo "NEXT_PUBLIC_RPC_URL=${{ secrets.NEXT_PUBLIC_RPC_URL }}" >> $GITHUB_ENV
+      - name: Set environment variable for NEXT_PUBLIC_RPC_URL_DEV
+        run: echo "NEXT_PUBLIC_RPC_URL_DEV=${{ secrets.NEXT_PUBLIC_RPC_URL_DEV }}" >> $GITHUB_ENV
+      - name: Set environment variable for NEXT_PUBLIC_SOLANA_NETWORK
+        run: echo "NEXT_PUBLIC_SOLANA_NETWORK=${{ secrets.NEXT_PUBLIC_SOLANA_NETWORK }}" >> $GITHUB_ENV
+      - name: Set environment variable for MONGODB_URI
+        run: echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> $GITHUB_ENV
       - name: Set environment variable for Resend API key
         run: echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> $GITHUB_ENV
 
