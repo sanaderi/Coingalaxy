@@ -18,7 +18,7 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build the app
         run: npm run build
@@ -47,6 +47,6 @@ jobs:
           key: ${{ secrets.VPS_PRIVATE_KEY }}
           script: |
             cd /home/coingalaxy/front
-            npm ci --omit=dev
+            npm install --omit=dev
             pm2 restart nextjs || pm2 start npm --name "nextjs" -- start
             pm2 save
