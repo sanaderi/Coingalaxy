@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     // If any wallet has changed significantly, send an email
     if (significantChanges.length > 0) {
       const emailText = significantChanges.join('\n\n')
-      const res = await fetch('https://coingalaxy.info/api/sendEmail', {
+      const res = await fetch('https://coingalaxy.info/api/sendTelegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
