@@ -14,11 +14,13 @@ const whaleAddresses = [
 const balanceFilePath = '/tmp/balances.json'
 
 export async function GET(req: NextRequest) {
+  console.log("step 1");
   try {
     const walletBalances: any[] = []
     const previousBalances = await getPreviousBalances()
     const significantChanges: string[] = []
 
+    console.log("step 2");
     for (const walletAddress of whaleAddresses) {
       const balance = await connection.getBalance(walletAddress)
       const balanceInSol = balance / LAMPORTS_PER_SOL
@@ -29,6 +31,7 @@ export async function GET(req: NextRequest) {
       const absDiff = Math.abs(diff)
 
       if (absDiff > 55) {
+        console.log("step 3");
         const direction = diff > 0 ? 'increased' : 'decreased'
         significantChanges.push(
           `Wallet ${address} ${direction} by ${absDiff.toFixed(2)} SOL\nPrevious: ${previousBalance.toFixed(2)} SOL\nCurrent: ${balanceInSol.toFixed(2)} SOL\n`
@@ -41,6 +44,7 @@ export async function GET(req: NextRequest) {
         previousBalance,
         balanceDifference: absDiff,
       })
+      console.log("step 4");
 
       await saveBalance(address, balanceInSol)
     }
@@ -90,13 +94,17 @@ interface Balances {
   [walletAddress: string]: number;
 }
 async function saveBalance(walletAddress: string, balance: number) {
+  console.log("step 5");
   let balances: Balances = {}; // Define the type for balances
 
   if (fs.existsSync(balanceFilePath)) {
+    console.log("step 6");
     const data = fs.readFileSync(balanceFilePath, 'utf-8')
     balances = JSON.parse(data)
   }
 
   balances[walletAddress] = balance
+  console.log("step 7");
   fs.writeFileSync(balanceFilePath, JSON.stringify(balances, null, 2), 'utf-8')
+  console.log("step 8");
 }
