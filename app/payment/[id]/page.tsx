@@ -12,7 +12,8 @@
 //   description: 'Solana payment gateway'
 // }
 
-export default async function Payment({ params }: { params: { id: string } }) {
+// export default async function Payment({ params }: { params: { id: string } }) {
+export default async function Payment() {
 //   const pageId = params.id
 
 //   // Validate id
