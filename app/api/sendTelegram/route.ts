@@ -13,7 +13,9 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         chat_id: TELEGRAM_CHAT_ID,
-        text: body,
+        text: body.txt,
+        parse_mode: 'HTML',  // Enable HTML formatting
+
       }),
     });
   
