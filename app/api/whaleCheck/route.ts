@@ -8,7 +8,8 @@ if (!SOLANA_CLUSTER) throw new Error('Environment variable NEXT_PUBLIC_RPC_URL i
 const connection = new Connection(SOLANA_CLUSTER, 'confirmed')
 const whaleAddresses = [
   new PublicKey('MfDuWeqSHEqTFVYZ7LoexgAK9dxk7cy4DFJWjWMGVWa'),
-  new PublicKey('9amABYwZ73MtduGjWD3Ne3LUyf9PgCeK7nrnALX3KQM1'),
+  new PublicKey('adbX7mffbFeQZfuMiVVH1yA4AvpNNn8wb2n2wuwb7aC'),
+  new PublicKey('arsc4jbDnzaqcCLByyGo7fg7S2SmcFsWUzQuDtLZh2y'),
 ]
 const balanceFilePath = './balances.json'
 
