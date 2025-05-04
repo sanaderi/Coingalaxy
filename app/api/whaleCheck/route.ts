@@ -11,7 +11,7 @@ const whaleAddresses = [
   new PublicKey('adbX7mffbFeQZfuMiVVH1yA4AvpNNn8wb2n2wuwb7aC'),
   new PublicKey('arsc4jbDnzaqcCLByyGo7fg7S2SmcFsWUzQuDtLZh2y'),
 ]
-const balanceFilePath = './balances.json'
+const balanceFilePath = '/home/coingalaxy/balances.json'
 
 export async function GET(req: NextRequest) {
   try {
