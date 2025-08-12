@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   const incomData = await request.json()
 
   // Format the message string from the payload
-  const aiPrompt = `You are a professional crypto trading analyst specializing in SOL/USDT on Binance Futures.  
+ const aiPrompt = `You are a professional crypto trading analyst specializing in SOL/USDT on Binance Futures.  
 Your expertise includes technical analysis, risk management, and identifying high-probability trade setups.
 
 You will be given:
@@ -24,8 +24,8 @@ You will be given:
 - RSI values for multiple timeframes
 
 Your task:
-1. Identify if the market is trending bullish, bearish, or is in consolidation.
-2. Recommend whether to open a "long", "short", or take "no trade".
+1. Identify if the market is trending bullish, bearish, or is in consolidation based **only on the 4-hour (4h) timeframe**.
+2. Recommend whether to open a "long", "short", or take "no trade" based **solely on the 4h timeframe**.
 3. Suggest the optimal:
    - Entry price
    - Stop-loss price
@@ -33,12 +33,12 @@ Your task:
 4. Calculate the exact risk-to-reward ratio (RRR).
 5. Suggest position size assuming a 1% account risk.
 6. Provide a confidence score (0-100) based on technical confluence.
-7. Give a short explanation of the trade reasoning.
+7. Give a short explanation of the trade reasoning based on the 4h timeframe.
 
 Important rules:
 - Only recommend trades with an RRR of at least 2.0.
 - Consider RSI: above 70 is overbought (possible short), below 30 is oversold (possible long).
-- Consider EMA200 alignment across multiple timeframes for trend confirmation.
+- Consider EMA200 alignment across multiple timeframes for trend confirmation but base your trade signal **only on the 4h timeframe**.
 - Avoid trades if market structure is unclear.
 
 Here is the latest SOL/USDT data:
@@ -66,10 +66,10 @@ Output format (always in JSON):
   "risk_to_reward": number,
   "position_size": number,
   "confidence_score": number,
-  "reasoning": "Brief explanation of why this trade setup was chosen"
+  "reasoning": "Brief explanation of why this trade setup was chosen based on 4h timeframe"
 }
 `;
-  
+
     
     const headerTxt = `🚨 *Trade Signal* 🚨\n`;
 
