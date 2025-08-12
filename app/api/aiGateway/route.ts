@@ -1,7 +1,7 @@
 // app/api/chatgpt/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-const ALLOWED_ORIGINS = [`https://coingalaxt.info`];
+const ALLOWED_ORIGINS = [`https://coingalaxy.info`];
 
 export async function POST(req: NextRequest) {
   const origin = req.headers.get('origin');
