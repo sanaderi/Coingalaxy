@@ -9,56 +9,150 @@ if (!process.env.SECRET_ADDRESS) {
   throw new Error('SECRET_KEY environment variable not set')
 }
 let secretKey = JSON.parse(process.env.SECRET_ADDRESS)
+
+
 export async function POST(request: NextRequest) {
-  const data = await request.json()
+  const incomData = await request.json()
 
   // Format the message string from the payload
-  const messageText = 
-`🚨 *Trade Signal* 🚨
+  const aiPrompt = `You are a professional crypto trading analyst specializing in SOL/USDT on Binance Futures.  
+Your expertise includes technical analysis, risk management, and identifying high-probability trade setups.
 
-*Price:* ${data.price}
+You will be given:
+- Current price
+- EMA200 values for multiple timeframes
+- RSI values for multiple timeframes
 
-*EMA200:*
-• 15m: ${data.ema200_15m}
-• 1h: ${data.ema200_1h}
-• 4h: ${data.ema200_4h}
-• 1d: ${data.ema200_1d}
-• 1w: ${data.ema200_1w}
+Your task:
+1. Identify if the market is trending bullish, bearish, or is in consolidation.
+2. Recommend whether to open a "long", "short", or take "no trade".
+3. Suggest the optimal:
+   - Entry price
+   - Stop-loss price
+   - Take-profit price
+4. Calculate the exact risk-to-reward ratio (RRR).
+5. Suggest position size assuming a 1% account risk.
+6. Provide a confidence score (0-100) based on technical confluence.
+7. Give a short explanation of the trade reasoning.
 
-*RSI:*
-• 15m: ${data.rsi_15m}
-• 1h: ${data.rsi_1h}
-• 4h: ${data.rsi_4h}
-• 1d: ${data.rsi_1d}
-• 1w: ${data.rsi_1w}`;
+Important rules:
+- Only recommend trades with an RRR of at least 2.0.
+- Consider RSI: above 70 is overbought (possible short), below 30 is oversold (possible long).
+- Consider EMA200 alignment across multiple timeframes for trend confirmation.
+- Avoid trades if market structure is unclear.
 
+Here is the latest SOL/USDT data:
+Price: ${incomData.price}
+EMA200:
+• 15m: ${incomData.ema200_15m}
+• 1h: ${incomData.ema200_1h}
+• 4h: ${incomData.ema200_4h}
+• 1d: ${incomData.ema200_1d}
+• 1w: ${incomData.ema200_1w}
+RSI:
+• 15m: ${incomData.rsi_15m}
+• 1h: ${incomData.rsi_1h}
+• 4h: ${incomData.rsi_4h}
+• 1d: ${incomData.rsi_1d}
+• 1w: ${incomData.rsi_1w}
+
+Output format (always in JSON):
+{
+  "pair": "SOL/USDT",
+  "direction": "long" | "short" | "no trade",
+  "entry_price": number,
+  "stop_loss": number,
+  "take_profit": number,
+  "risk_to_reward": number,
+  "position_size": number,
+  "confidence_score": number,
+  "reasoning": "Brief explanation of why this trade setup was chosen"
+}
+`;
   
+    
+    const headerTxt = `🚨 *Trade Signal* 🚨\n`;
 
-  if (messageText.length > 0) {
-    const res = await fetch('https://coingalaxy.info/api/sendTelegram', {
-      // Replace with your API URL
+  try {
+    // 2️⃣ Send to AI Gateway
+    const aiRes = await fetch(`https://coingalaxy.info/api/aiGateway`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userComment: aiPrompt }),
+    });
+
+    const aiText = await aiRes.text();
+    let aiJson: any = {};
+    try {
+      aiJson = aiText ? JSON.parse(aiText) : {};
+    } catch {
+      aiJson = { error: 'Invalid JSON from aiGateway' };
+    }
+
+    let telegramMessage = '';
+
+    // ✅ 3️⃣ If AI succeeded, format beautifully
+    if (aiRes.ok && aiJson?.response) {
+      let parsed;
+      try {
+        parsed = JSON.parse(aiJson.response); // AI should return valid JSON string
+      } catch {
+        try {
+            parsed = JSON.parse(JSON.parse(aiJson.response));
+          } catch {
+            parsed = null;
+          }
+      }
+
+      if (parsed) {
+        telegramMessage =
+          `${headerTxt}` +
+          `📊 *Pair:* ${parsed.pair}\n` +
+          `📈 *Direction:* ${parsed.direction.toUpperCase()}\n` +
+          `💰 *Entry Price:* ${parsed.entry_price}\n` +
+          `🛑 *Stop Loss:* ${parsed.stop_loss}\n` +
+          `🎯 *Take Profit:* ${parsed.take_profit}\n` +
+          `📏 *RRR:* ${parsed.risk_to_reward}\n` +
+          `📦 *Position Size:* ${parsed.position_size}\n` +
+          `🔥 *Confidence:* ${parsed.confidence_score}%\n\n` +
+          `📝 *Reasoning:* ${parsed.reasoning}`;
+      } else {
+        telegramMessage = headerTxt + aiJson.response;
+      }
+    } else {
+      // ❌ AI failed
+      telegramMessage =
+        headerTxt +
+        '❌ AI request failed:\n' +
+        (aiJson?.error || aiText || 'Unknown error');
+    }
+
+    // 4️⃣ Send to Telegram
+    const tgRes = await fetch('https://coingalaxy.info/api/sendTelegram', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         subject: '🚨 Trade Signal',
-        txt: messageText
-      })
-    })
+        txt: telegramMessage,
+      }),
+    });
 
+    const tgText = await tgRes.text();
+    let tgJson: any = {};
     try {
-      const text = await res.text()
-      const json = text ? JSON.parse(text) : {}
-      console.log('Custom API response:', json)
-      return NextResponse.json({ msg: `Custom API response: ${json}` })
-
-
-    } catch (e) {
-      console.error('Failed to parse custom API response:', e)
-      return NextResponse.json({ error: `Failed to parse custom API response: ${e}` }, { status: 500 })
+      tgJson = tgText ? JSON.parse(tgText) : {};
+    } catch {
+      tgJson = { error: 'Invalid JSON from Telegram API' };
     }
-  } else
-    return NextResponse.json({ error: `message is empty` }, { status: 500 })
 
+    return NextResponse.json({
+      aiGateway: aiJson,
+      telegram: tgJson,
+    });
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
   // Retrieve the inserted value (for verification)
   //   try {
   //     // Define the allowed IP addresses
