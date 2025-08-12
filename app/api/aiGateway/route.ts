@@ -5,6 +5,7 @@ const ALLOWED_ORIGINS = [`https://coingalaxy.info`];
 
 export async function POST(req: NextRequest) {
   const origin = req.headers.get('origin');
+  console.log(origin);
 
   if (!ALLOWED_ORIGINS.includes(origin || '')) {
     return NextResponse.json(
