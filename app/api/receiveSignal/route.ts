@@ -22,25 +22,33 @@ You will be given:
 - Current price
 - EMA200 values for multiple timeframes
 - RSI values for multiple timeframes
+- MACD (MACD line, Signal line, Histogram) for multiple timeframes
 
 Your task:
 1. Analyze the market comprehensively using all provided timeframe data (15m, 1h, 4h, 1d, 1w) to understand the overall trend and momentum.
-2. Based on this multi-timeframe analysis, provide your trade recommendation specifically for the 4-hour (4h) timeframe.
-3. Recommend whether to open a "long", "short", or take "no trade" position on the 4h timeframe.
-4. Suggest the optimal:
+2. Use EMA200 alignment to identify trend direction across timeframes.
+3. Use RSI to assess momentum:
+   - RSI above 70 = buying momentum may be ending (potential slowdown, possible reversal or consolidation).
+   - RSI below 30 = selling momentum may be ending (potential slowdown, possible reversal or consolidation).
+4. Use MACD:
+   - MACD line above Signal line = bullish momentum.
+   - MACD line below Signal line = bearish momentum.
+   - Histogram size and change indicate momentum strength or weakening.
+5. Based on this multi-timeframe analysis, provide your trade recommendation specifically for the 4-hour (4h) timeframe.
+6. Recommend whether to open a "long", "short", or take "no trade" position on the 4h timeframe.
+7. Suggest the optimal:
    - Entry price
    - Stop-loss price
    - Take-profit price
-5. Calculate the exact risk-to-reward ratio (RRR).
-6. Suggest position size assuming a 1% account risk.
-7. Provide a confidence score (0-100) based on technical confluence.
-8. Give a concise explanation of the trade reasoning, focusing on why the 4h timeframe trade is appropriate given the other timeframe data.
+8. Calculate the exact risk-to-reward ratio (RRR).
+9. Suggest position size assuming a 1% account risk.
+10. Provide a confidence score (0-100) based on technical confluence.
+11. Give a concise explanation of the trade reasoning, focusing on why the 4h timeframe trade is appropriate given the other timeframe data.
 
 Important rules:
 - Only recommend trades with an RRR of at least 2.0.
-- Consider RSI: above 70 is overbought (possible short), below 30 is oversold (possible long).
-- Use EMA200 alignment across all timeframes to confirm trends and market structure.
 - Avoid trades if market structure is unclear or conflicting between timeframes.
+- Confirm trade direction using EMA200 trend alignment + RSI momentum context + MACD momentum confirmation.
 
 Here is the latest SOL/USDT data:
 Price: ${incomData.price}
@@ -56,6 +64,12 @@ RSI:
 • 4h: ${incomData.rsi_4h}
 • 1d: ${incomData.rsi_1d}
 • 1w: ${incomData.rsi_1w}
+MACD:
+• 15m: MACD=${incomData.macd_15m}, Signal=${incomData.signal_15m}, Hist=${incomData.hist_15m}
+• 1h: MACD=${incomData.macd_1h}, Signal=${incomData.signal_1h}, Hist=${incomData.hist_1h}
+• 4h: MACD=${incomData.macd_4h}, Signal=${incomData.signal_4h}, Hist=${incomData.hist_4h}
+• 1d: MACD=${incomData.macd_1d}, Signal=${incomData.signal_1d}, Hist=${incomData.hist_1d}
+• 1w: MACD=${incomData.macd_1w}, Signal=${incomData.signal_1w}, Hist=${incomData.hist_1w}
 
 Output format (always in JSON):
 {
@@ -67,9 +81,15 @@ Output format (always in JSON):
   "risk_to_reward": number,
   "position_size": number,
   "confidence_score": number,
+  "ema200_4h": number,
+  "rsi_4h": number,
+  "macd_4h": number,
+  "signal_4h": number,
+  "hist_4h": number,
   "reasoning": "Brief explanation of why this trade setup was chosen focusing on 4h timeframe and supporting timeframe data"
 }
 `;
+
 
 
 
