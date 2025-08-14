@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model: 'gpt-4o',
         messages: [{ role: 'user', content: userComment }],
-        max_tokens: 220,
+        max_tokens: 420,
       }),
     });
 
